@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" context="text/html; charset=UTF-8">
+        <title>Create Live Stream</title>
+        <link th:href="@{/css/styles.css}" rel="stylesheet">
+        <script th:src="@{/js/repopulate-image.js}"></script>
+        <link rel="icon" type="image/x-icon" href='../../img/grapevine-logo-small.svg'>
+    </head>
+    <body>
+        <!-- Nav Bar -->
+        <div th:replace="fragments/navbar.html :: nav-bar(${gardens})"></div>
+
+        <!-- Containers for Form -->
+        <div class="createGardenBody">
+            <div class="container">
+                <div class="title">Create Livestream</div>
+
+                <!-- Create Form -->
+                <form th:action="@{'/livestream/create'}" 
+                      th:method="post"
+                      th:object="${livestreamDTO}"
+                      enctype="multipart/form-data"
+                      id="livestream-form">
+
+                    <div class="garden-details">
+                        <!-- Title -->
+                        <div class="input-box">
+                            <span class="details required">Title</span>
+                            <input type="text" placeholder="e.g. Planting Herbs" th:field="*{title}" th:style="${#fields.hasErrors('title') ? 'border-color: #ff0000;' : 'border-color: var(--text-box-outline);'}">
+                            <span th:if="${#fields.hasErrors('title')}" th:errors="*{title}" style="color: red;"></span>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="input-box">
+                            <span class="details required">Description</span>
+                            <div class="flex-row">
+                                <textarea rows="5" cols="60" type="text" class="post-content"
+                                      th:field="*{description}"
+                                      th:style="${#fields.hasErrors('description') ? 'border-color: #ff0000;' : 'border-color: var(--text-box-outline);'}">
+                                </textarea>
+                            </div>
+                            <span th:if="${#fields.hasErrors('description')}" th:errors="*{description}" style="color: red;"></span>
+                        </div>
+
+                        <!-- Thumbnail Upload -->
+                        <div class="input-box">
+
+                            <span class="details">Thumbnail</span>
+
+                            <!-- Drop Zone -->
+                            <div class="post-image-drop-zone" id="image-drop-zone" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);" th:style="${#fields.hasErrors('image') ? 'border-color: #ff0000;' : 'border-color: var(--text-box-outline);'}">
+                                <div class="add-image-button-container">
+                                    <button onclick="upload();" type="button" id="add-image-button" class="add-image-button">
+                                        <img th:src="@{/img/add-image-icon.svg}"/>
+                                    </button>
+                                    <span onclick="upload();">Click icon or drag and drop to add an image</span>
+                                </div>
+
+                                <div id="image-preview-container">
+                                    <img id="image-preview"/>
+                                    <button type="button" onclick="openImageDiscardConfirmation()" class="close-modal-button">
+                                        &#x2715;
+                                    </button>
+                                </div>
+
+                                <div id="input_container">
+                                    <input type="file" id="add-post-image" th:field="*{image}" accept="image/png, image/jpeg, image/jpg, image/svg+xml"/>
+                                </div>
+                            </div>
+
+                            <!-- Error Message -->
+                            <div class="image-error-message">
+                                <span id="post-image-field-error" th:if="${#fields.hasErrors('image')}" th:errors="*{image}"></span>
+                                <span id="client-side-img-val"></span>
+                            </div>
+                        </div>
+
+                        <!-- Terms of Service Checkbox -->
+                        <div class="termsCheck">
+                            <input type="checkbox" id="termsCheckbox" onclick="toggleSubmitButton()">
+                            <label for="termsCheckbox" class="required">
+                                I have read and agree to the
+                                <a href="../livestream/terms" id="termsLink" target="_blank">Terms of Service</a>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Cancel and Create Button -->
+                    <div class="button-container">
+                        <button class="cancel" type="button" onclick="goPrev()" id="cancel">
+                            <span>Cancel</span>
+                        </button>
+                        <button type="submit" class="submit disabled" id="submitBtn" style="color: lightgray" disabled>
+                            <span>Start Stream</span>
+                        </button>
+                    </div>
+                    <div th:if="${#fields.hasGlobalErrors()}">
+                        <span style="color: red;">This account is already livestreaming. End the other stream to start a new one: <a th:href="@{/livestream/browse/{id}(id=${#fields.globalErrors().getFirst()})}">Open Livestream</a></span>
+                    </div>
+                    <!--            Repopulates image field after an invalid submission-->
+                    <script th:if="${livestreamDTO.imageExists()} and !${#fields.hasErrors('image')}" th:inline="javascript">
+                        let base64Image = /*[[${livestreamDTO.getImagePreview()}]]*/;
+                        let imageType = /*[[${livestreamDTO.image.getContentType()}]]*/;
+                        let imageName = /*[[${livestreamDTO.image.getOriginalFilename()}]]*/;
+                        repopulateImageField(base64Image, imageType, imageName)
+                    </script>
+                </form>
+            </div>
+
+            <!-- Image Confirmation Dialogue-->
+            <div id="confirm-image-discard-overlay" class="confirm-overlay">
+                <div id="confirm-image-discard-overlay-container" class="confirm-overlay-container">
+                    <p>Are you sure you want to discard this image?</p>
+                    <div class="button-container">
+                        <button class="cancel" type="button" id="confirm-no-image" onclick="cancelDiscardImage()">
+                            <Span>No</Span>
+                        </button>
+                        <button class="edit confirm-yes" type="button" id="confirm-yes-image" onclick="confirmDiscardImage()">
+                            <Span>Yes</Span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Audio Video Check Dialogue-->
+        <div id="confirm-audio-video-discard-overlay" class="confirm-overlay">
+            <div class="confirm-overlay-container">
+                <strong>Livestream cannot be started without a valid microphone and camera.</strong>
+                <div id="audio-video-status-container">
+                    <div id="camera-text-div">
+                        <div id="camera-box"></div>
+                        <p id="camera-text">Camera access is required to start stream.</p>
+                    </div>
+                    <div id="mic-text-div">
+                        <div id="audio-box"></div>
+                        <p id="mic-text">Microphone access is required to start stream.</p>
+                    </div>
+                </div>
+                <div class="button-container">
+                    <button class="cancel" type="button" id="cancel-audio-video" onclick="hideModal()">
+                        <Span>Close</Span>
+                    </button>
+                    <button class="edit" type="button" id="rescan-audio-video" onclick="rescanAudioVideo()">
+                        <Span id="rescan-text">Rescan</Span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- JS Scripts -->
+        <script th:src="@{/js/cancel-button-redirect.js}"></script>
+        <script th:src="@{/js/suppress-enter-submission.js}" data-allowed-types="submit,button,checkbox" data-allowed-ids="termsLink"></script>
+        <script th:src="@{/js/upload-post-image.js}"></script>
+        <script th:src="@{/js/confirm-cancel.js}"></script>
+        <script th:src="@{/js/audio-video-validation.js}"></script>
+
+        <script>
+            function toggleSubmitButton() {
+                const checkbox = document.getElementById('termsCheckbox');
+                const submitButton = document.getElementById('submitBtn');
+
+                // Enable/Disable submit button based on checkbox state
+                submitButton.disabled = !checkbox.checked;
+
+                // Optionally apply a 'disabled' class to style the button when disabled
+                if (checkbox.checked) {
+                    submitButton.classList.remove('disabled');
+                    submitButton.style.color = 'white';
+                } else {
+                    submitButton.classList.add('disabled');
+                    submitButton.style.color = 'lightgray'
+                }
+            }
+        </script>
+    </body>
+</html>

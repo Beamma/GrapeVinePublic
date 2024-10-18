@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" context="text/html; charset=UTF-8">
+    <title>Register</title>
+    <link th:href="@{/css/styles.css}" rel="stylesheet">
+    <script th:src="@{/js/toggle-colour-scheme.js}"></script>
+    <link rel="icon" type="image/x-icon" href='../../img/grapevine-logo-small.svg'>
+</head>
+<body>
+<div th:replace="~{fragments/loading-spinner.html :: loading-spinner(message='Sending confirmation email. Please wait.')}"></div>
+<div class="outer-container">
+    <div class="inner-container">
+        <span class="welcome-message">Register for GrapeVine!</span>
+        <form id="registerUserForm" class="register-form" th:action="@{/auth/register}" method="post" th:object="${user}" onsubmit="showLoadingSpinner()">
+
+            <!-- Email Field -->
+            <div class="form-field">
+                <label class="required" for="email">Email:</label>
+                <input type="email" class="form-control" id="email" placeholder="Email" th:field="*{email}" data-cy="email">
+                <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="error" style="color: red;"></span>
+            </div>
+
+            <!-- Date of Birth Field -->
+            <div class="form-field">
+                <label for="dob">Date of Birth:</label>
+                <input type="date" class="form-control" id="dob" placeholder="Date of Birth" th:field="*{dob}"
+                       data-cy="dob" max="9999-12-31"> <!-- max from https://stackoverflow.com/a/26870709, to fix 6 digit years in chrome -->
+                <span th:if="${#fields.hasErrors('dob')}" th:errors="*{dob}" class="error" style="color: red;"></span>
+            </div>
+
+            <!-- First Name Field -->
+            <div class="form-field">
+                <label class="required" for="firstName">First Name:</label>
+                <input type="text" class="form-control" id="firstName" placeholder="First Name"
+                       th:field="*{firstName}"
+                       data-cy="firstName">
+                <span th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}" class="error"
+                      style="color: red;"></span>
+            </div>
+
+            <!-- Last Name Field -->
+            <div class="form-field">
+                <div id="last-name-label-container" class="flex-row-spaced">
+                    <label for="lastName">Last Name:</label>
+                    <!-- No Last Name Checkbox -->
+                    <label>
+                        <input type="checkbox" th:field="*{noLastName}" id="noLastNameCheckbox" th:checked="${user.noLastName ? 'checked' : ''}"
+                               onclick="toggleLastNameField()">
+                        I have no surname
+                    </label>
+                </div>
+                <input type="text" class="form-control" id="lastName" placeholder="Last Name" th:field="*{lastName}"
+                       th:disabled="${user.noLastName ? 'true' : 'false'}"
+                       data-cy="lastName">
+                <span th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}" class="error"
+                      style="color: red;"></span>
+            </div>
+
+            <!-- Password Field -->
+            <div class="form-field">
+                <label class="required" for="password">Password:</label>
+                <input type="password" class="form-control" id="password" name="password" placeholder="Password"
+                       th:value="*{password}"
+                       data-cy="password">
+                <span th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="error"
+                      style="color: red;"></span>
+            </div>
+
+            <!-- Repeat Password Field -->
+            <div class="form-field">
+                <label class="required" for="passwordRepeat">Repeat Password:</label>
+                <input type="password" class="form-control" id="passwordRepeat"  name="passwordRepeat" placeholder="Repeat Password"
+                       th:value="*{passwordRepeat}" data-cy="passwordRepeat">
+                <span th:if="${#fields.hasErrors('passwordRepeat')}" th:errors="*{passwordRepeat}" class="error"
+                      style="color: red;"></span>
+            </div>
+
+            <div class="button-container">
+                <button class="cancel" type="button" onclick="cancelAction(event)">
+                    <span th:href="@{/}">Cancel</span>
+                </button>
+                <button class="submit" type="submit">
+                    <span>Sign Up</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+        <!-- JavaScript Function -->
+        <script th:inline="javascript">
+            /* JavaScript to toggle the disabled state of the last name field based on the checkbox */
+            function toggleLastNameField() {
+                let lastNameField = document.getElementById('lastName');
+                let checkbox = document.getElementById('noLastNameCheckbox');
+                lastNameField.disabled = checkbox.checked;
+                if (checkbox.checked) {
+                    lastNameField.value = ''; // Clear the last name field if "I have no last name" is checked
+                } else {
+                    lastNameField.value = "";
+                }
+            }
+        </script>
+    </body>
+    <script th:src="@{/js/custom-date-error-message.js}" data-date-field-names="dob"></script>
+    <script th:src="@{/js/suppress-enter-submission.js}" data-allowed-types="submit,button" data-allowed-ids="passwordRepeat"></script>
+    <script th:src="@{/js/show-loading-spinner.js}"></script>
+</html>

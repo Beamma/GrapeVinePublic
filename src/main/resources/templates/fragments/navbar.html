@@ -1,0 +1,48 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="headerfiles">
+    <meta charset="UTF-8"/>
+    <link th:href="@{/css/styles.css}" rel="stylesheet">
+</head>
+<body>
+
+<!--https://www.w3schools.com/howto/tryit.asp?filename=tryhow_css_dropdown_navbar_click-->
+
+<nav th:fragment="nav-bar(gardens)">
+    <script th:src="@{/js/toggle-colour-scheme.js}"></script>
+    <ul class="navbar-list">
+        <li><a th:href="@{/user/home}"><img th:src="@{/img/grapevine-logo.svg}" class="logo-nav" alt="GrapeVine"></a></li>
+        <li class="dropdown" style="display:flex; justify-content: space-evenly;">
+            <a th:href="@{'/garden/list/' + ${navBarUser.getId()}}">Gardens</a>
+            <button type="button" class="dropbutton">
+                <img th:replace="fragments/icons.html :: chevron-down">
+            </button>
+            <div id="gardenDropdown" class="dropdown-content">
+                <a th:href="@{/garden/add}" class="create-garden" >New Garden <img th:replace="fragments/icons.html :: plus"></a>
+                <a th:each="garden : ${gardens}" th:href="@{'/garden/' + ${garden.gardenId}}" th:text="${#strings.abbreviate(garden.name, 20)}">Garden</a>
+            </div>
+        </li>
+        <li class="dropdown" style="display:flex; justify-content: space-evenly;">
+            <a>Browse</a>
+            <button type="button" class="dropbutton">
+                <img th:replace="fragments/icons.html :: chevron-down">
+            </button>
+            <div id="browseDropdown" class="dropdown-content">
+                <a th:href="@{/garden/browse}">Gardens</a>
+                <a th:href="@{/feed/browse}">Feed</a>
+                <a th:href="@{/livestream/browse}">Livestreams</a>
+            </div>
+        </li>
+<!--        variable in URL from https://stackoverflow.com/a/14938399-->
+        <div class="small-profile-image-container dropdown" style="float: right">
+            <a th:href="@{/user/profile/{userId}(userId=${navBarUser.getId()})}"><img th:src="${navBarUser.getProfileImageBase64()}" class="small-profile-image" onerror="this.onerror=null; this.src='../img/profileicon.png';"></a>
+            <div id="profileDropdown" class="dropdown-content" style="min-width: 70px">
+                <a th:href="@{/user/profile/{userId}(userId=${navBarUser.getId()})}">Profile</a>
+                <a th:href="@{/manage/friends}">Friends</a>
+            </div>
+        </div>
+    </ul>
+</nav>
+
+</body>
+</html>

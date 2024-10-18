@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Registration Confirmation</title>
+</head>
+<body style="background-color: #fffaf0;">
+<div style="width: 100%; align-items: center; display: flex; flex-direction: column; height: 100%">
+
+    <table style="width: 100%; max-width: 100%; height: 100%; justify-content: space-around; font-family: 'Tahoma', sans-serif;">
+        <tbody style="text-align: center; margin: auto">
+        <tr>
+            <h1 style="width: 100%; background-color: #639175; color: white; padding-bottom: 20px; padding-top: 20px; text-align: center; margin: 0; font-size: xx-large">
+                GrapeVine</h1>
+        </tr>
+        <tr>
+            <table style="text-align: center; margin: auto; padding-left: 2.5vh; padding-right: 2.5vh; height: 100%">
+                <tr>
+                    <span style="font-size: x-large; margin-top: 20px; margin-bottom: 20px; font-weight: bold; text-align: center";>Thanks for joining GrapeVine!</span>
+                </tr>
+                <tr>
+                    <span style="font-size: larger; text-align: center">We just need one more thing:</span>
+                </tr>
+                <tr>
+                    <span style="font-size: larger; text-align: center">Please copy and paste the following code to confirm your account creation.</span>
+                </tr>
+                <tr>
+                    <span th:text="${token}" style="font-size: x-large; margin-top: 20px">Error generating token. Please try again</span>
+                </tr>
+                <tr>
+                    <p style="font-size: medium; text-align: center; font-style: italic">If this was not you, you can ignore this message and the account will be deleted after 10 minutes.</p>
+                </tr>
+            </table>
+        <tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

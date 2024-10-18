@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--
+Inappropriate Modal fragment. Modal for inappropriate submission warning (5th) and blocking (6th).
+Post and comment.
+Parameters:
+-
+-->
+
+<!--Modal that pops up to show a warning message when the user has entered their fifth inappropriate submission-->
+<div id="fifth-inappropriate-submission-modal" class="blocked-modal" th:if="${fifthInappropriateSubmission}">
+    <div id="fifth-inappropriate-submission-modal-content" class="blocked-modal-content">
+        <p>You have added an inappropriate submission for the fifth time. If you add another
+            inappropriate submission, your account will be blocked for one week.</p>
+        <button id="close-fifth-inappropriate-submission-modal" class="blocked-modal-close"
+                onclick="hideFifthInappropriateSubmissionModal()" autofocus>OK
+        </button>
+    </div>
+</div>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    function hideFifthInappropriateSubmissionModal() {
+        document.getElementById('fifth-inappropriate-submission-modal').style.display = 'none';
+    }
+
+/*]]>*/
+</script>
+</body>
+</html>

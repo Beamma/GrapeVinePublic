@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" context="text/html; charset=UTF-8">
+    <title>Profile page</title>
+    <link th:href="@{/css/styles.css}" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href='../../img/grapevine-logo-small.svg'>
+</head>
+<body>
+<div th:replace="fragments/navbar.html :: nav-bar(${gardens})"></div>
+<!-- Page heading -->
+<div class="profile-container">
+    <div class="container">
+        <div class="profile-header">
+            <h2 class="title" th:text="${user.getId() == navBarUser.getId()} ? 'Your Profile' : ${user.getFirstName()} + '\'s Profile'">Your Profile</h2>
+            <button class="edit" id="to-profile-edit" th:if="${owner == true}">
+                <a id="to-profile-edit-a" th:href="@{/user/edit}">Edit Profile <img th:replace="fragments/icons.html :: pencil"></a>
+            </button>
+        </div>
+
+        <!-- Display Profile Image -->
+        <br/>
+        <div class="profile-image-container">
+            <form th:action="@{'/user/profile/' + ${user.id}}" method="post" th:object="${user}" id="editProfileForm"
+                  enctype="multipart/form-data">
+                <img class="big-profile-image" id="previewImage" th:src="${user.getProfileImageBase64()}">
+                <br/>
+                <div style="display: flex; flex-direction: row; justify-content: space-between; width: 100%">
+                    <label for="profileImageEdit" th:if="${owner == true}" class="profile-label">Edit Profile Picture:</label>
+                    <br/>
+                    <span id="jsImageErrorText" class="error" th:text="${imageError != null ? imageError : ''}" style="color: red;"></span>
+                    <span th:if="${profileSuccess != null}" id="imageSuccessText" th:text="${profileSuccess}" style="color: green;"></span>
+                    <div th:if="${user.getId() == navBarUser.getId()}" class="submit-image-container">
+                        <div class="submit-image-container" th:if="${owner == true}">
+                            <input type="file" class="form-control edit-image submit-image" id="profileImageEdit"
+                                   name="ProfileImage"
+                                   accept="image/*" data-cy="uploadedProfileImage" th:field="*{profileImage}"
+                                   th:onchange="previewFile([[${profileImage}]])">
+                            <button class="submit" type="submit" id="submitEdit" >
+                                <span style="font-size: small; padding: 3px 20px;">Save Profile Image</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <br/>
+
+        <!-- Display Email -->
+        <div>
+            <label for="email" class="profile-label">Email: </label>
+            <!-- Input field for Email with value from user object -->
+            <label th:text="${user.getEmail()}" id="email"></label>
+        </div>
+        </br>
+        <!-- Display Date of Birth -->
+        <div>
+            <label for="dob" class="profile-label">DOB: </label>
+            <label th:text="${user.getDob()}" id="dob"></label>
+        </div>
+        </br>
+        <!-- Display First Name -->
+        <div>
+            <label for="firstName" class="profile-label">First Name: </label>
+            <label th:text="${user.getFirstName()}" id="firstName"></label>
+        </div>
+        </br>
+        <!-- Display Last Name -->
+        <div>
+            <label for="lastName" class="profile-label">Last Name: </label>
+            <label th:text="${user.getLastName}" id="lastName"></label>
+        </div>
+        </br>
+        <!-- Logout Form -->
+        <form th:if="${user.getId() == navBarUser.getId()}" th:action="@{/auth/logout}" method="post">
+            <button class="submit" type="submit" style="background: var(--red-button-bg)">
+                <span>Log out</span>
+            </button>
+        </form>
+
+        </div>
+    </div>
+    </body>
+</html>
+<script th:src="@{/js/upload-image.js}"></script>
+<script th:src="@{/js/preview-file.js}"></script>
+<script th:src="@{/js/suppress-enter-submission.js}" data-allowed-types="submit,cancel" data-allowed-ids="profileImageEdit,to-profile-edit,to-profile-edit-a"></script>
+<script th:inline="javascript">
+    /**
+     * For image to show on page when updated - with help from ChatGPT
+     * Used on profile and edit profile pages
+     */
+    function previewFile(oldFile) {
+        checkPreviewFile(oldFile);
+    }
+
+</script>
+

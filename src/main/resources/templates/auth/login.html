@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" context="text/html; charset=UTF-8">
+    <title>Sign in</title>
+    <link th:href="@{/css/styles.css}" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href='../../img/grapevine-logo-small.svg'>
+    <script th:src="@{/js/toggle-colour-scheme.js}"></script>
+</head>
+<body>
+    <div class="outer-container">
+        <div class="inner-container">
+
+            <!-- Display the logout message if present -->
+            <div th:if="${message != null}">
+                <p th:text="${message}" style="color: red;"></p>
+            </div>
+
+            <span class="welcome-message">Sign into The GrapeVine!</span>
+
+            <span class="welcome-subtitle" th:if="${accountActivationSuccessMessage != null}" th:text="${accountActivationSuccessMessage}"></span>
+
+            <span class="error-message" th:if="${errorMessage != null}" th:text="${errorMessage}"></span>
+
+            <form class="register-form" th:action="@{/auth/login}" method="post" th:object="${user}" novalidate>
+
+                <!-- Email Field -->
+                <div class="form-field">
+                    <label for="email">Email:</label>
+                    <input type="text" class="form-control" id="email" placeholder="Email" data-cy="email" th:field="*{email}">
+                    <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="error" style="color: red;"></span>
+                </div>
+
+                <!-- Password Field -->
+                <div class="form-field">
+                    <label for="password">Password:</label>
+                    <input type="password" class="form-control" id="password" placeholder="Password" name="password" th:value="*{password}" data-cy="password">
+                    <span th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="error" style="color: red;"></span>
+                </div>
+
+                <!-- Submit & Cancel Button -->
+                <div class="button-container">
+                    <button class="cancel" type="button">
+                        <span th:href="@{/}">Cancel</span>
+                    </button>
+
+                    <button class="submit" type="submit" value="login">
+                        <span>Sign in</span>
+                    </button>
+                </div>
+
+                <!-- Register Button -->
+                <div class="email-not-received-container">
+                    <a id="register" th:href="@{/auth/register}">Not registered? Create an account</a>
+                </div>
+
+                <!-- Forgot Password Button -->
+                <div class="email-not-received-container">
+                    <a id="forgotPassword" th:href="@{/auth/forgotPassword}">Forgot your password? Reset Password</a>
+                </div>
+            </form>
+
+            <!-- Model for blocked account -->
+            <div id="blocked-modal" class="blocked-modal" th:if="${blocked}">
+                <div id="blocked-modal-content" class="blocked-modal-content">
+                    <p style="font-size: 14pt">Your account has been blocked for 7 days due to multiple inappropriate content submissions.</p>
+                    <button id="close-blocked-modal" class="blocked-modal-close" style="padding: 10px 20px 10px 20px" onclick="hideBlockModal()" autofocus>OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div hidden="hidden">
+        <form name="logout-form" th:action="@{/auth/logout}" method="post">
+            <input type="hidden" name="blocked" value="true">
+        </form>
+    </div>
+</body>
+<script th:src="@{/js/suppress-enter-submission.js}" data-allowed-types="submit,button" data-allowed-ids="password,register,forgotPassword"></script>
+<script th:src="@{/js/block-modal.js}"></script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    window.onload = function() {
+        let form = document.forms['logout-form'];
+        var blocked = /*[[${blocked}]]*/ 'false';
+        if (blocked === 'true') {
+            form.submit();
+        }
+    };
+    /*]]>*/
+</script>
+
+</html>

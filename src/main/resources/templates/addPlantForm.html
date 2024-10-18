@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta http-equiv="Content-Type" context="text/html; charset=UTF-8">
+    <title th:text="${plantId} == null ? 'Create New Plant' : 'Edit Plant'">Create New Garden</title>
+    <link th:href="@{/css/styles.css}" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href='../../img/grapevine-logo-small.svg'>
+</head>
+<body>
+<div th:replace="fragments/navbar.html :: nav-bar(${gardens})"></div>
+<div class="createGardenBody">
+    <div class="container">
+        <div class="title" th:text="${plantId} == null ? 'Create New Plant' : 'Edit Plant'">Create Plant</div>
+        <form
+                th:action="${plantId} == null ? @{'/garden/' + ${gardenId} + '/plant'} : @{'/garden/' + ${gardenId} + '/plant/' + ${plantId}}"
+                th:method="${plantId} == null ? 'post' : 'put'"
+                enctype="multipart/form-data">
+            <div class="garden-details">
+
+                <div class="add-image">
+                    <div class="details" id="openPopup">
+                        <div class="image-container">
+                            <img th:src="${existingPlantImage}" th:if="${existingPlantImage}"></img>
+                            <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"
+                                 th:unless="${existingPlantImage}">
+                                <rect width="100" height="100" style="fill:lightgray;"/>
+                                <text cursor="pointer" x="50%" y="50%" text-anchor="middle" fill="#adabae"
+                                      font-size="16px" dy=".3em">+
+                                </text>
+                            </svg>
+                        </div>
+                        <button class="submit" type="button" id="selectImage" style="font-size: medium">
+                        <span>
+                            <p id="selectImageP" th:text="${existingPlantImage} == null ? 'Add Image' : 'Edit Image'"></p>
+                            <img th:replace="fragments/icons.html :: plus">
+                        </span>
+                        </button>
+                        <span class="error" th:text="${imageError}"></span>
+                    </div>
+                    <div class="popup" id="uploadImage">
+                        <div class="popup-content">
+                            <input type="file" id="plantImage" name="plantImage" accept=".jpg, .jpeg, .png, .svg, .xml">
+                            <span id="imageValidationError"></span>
+                            <div class="button-container">
+                                <button class="cancel" type="button" id="closePopup">
+                                    <span>Cancel</span>
+                                </button>
+                                <button class="submit" type="button" id="submitImage">
+                                    <span>Submit</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="details" id="imagePath"></div>
+                    <span class="error" th:text="${imageError}"></span>
+                </div>
+
+                <div class="input-box">
+                    <span class="details required">Plant Name</span>
+                    <input type="text" placeholder="Enter Plant Name" name="plantName" th:value="${plantName}"
+                           th:style="${nameError != null ? 'border-color: #ff0000;' : _}">
+                    <span class="error" th:text="${nameError}"></span>
+                </div>
+
+                <div class="input-box">
+                    <span class="details">Plant Count</span>
+                    <input type="text" placeholder="Enter Plant Count" name="count" th:value="${count}" min="1"
+                           th:style="${countError != null ? 'border-color: #ff0000;' : 'border-color: #00b834;'}">
+                    <span class="error" th:text="${countError}"></span>
+                </div>
+
+                <div class="input-box">
+                    <span class="details">Plant Description</span>
+                    <textarea class="plant-description" placeholder="Enter Plant Description" name="description" th:text="${description}"
+                              th:style="${descriptionError != null ? 'border-color: #ff0000;' : 'border-color: #00b834;'}"
+                              rows="4"></textarea>
+                    <span class="error" th:text="${descriptionError}"></span>
+                </div>
+
+                <div class="input-box">
+                    <span class="details">Planted Date (DD/MM/YYYY)</span>
+                    <input type="date" placeholder="Enter Planted Date" name="datePlanted" th:value="${{datePlanted}}"
+                           th:style="${dateError != null ? 'border-color: #ff0000;' : 'border-color: #00b834;'}"  max="9999-12-31"> <!-- max from https://stackoverflow.com/a/26870709, to fix 6 digit years in chrome -->
+                    <span class="error" th:text="${dateError}"></span>
+                </div>
+
+            </div>
+            <div class="button-container">
+                <button class="cancel" type="button">
+                    <span th:href="@{'/garden/' + ${gardenId}}">Cancel</span>
+                </button>
+                <button type="submit" class="submit">
+                    <span th:text="${plantId} == null ? 'Create' : 'Submit'"></span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+<script type="text/javascript" th:inline="javascript">
+    /*<![CDATA[*/
+    var link = /*[[@{'/garden/' + ${gardenId}}]]*/'';
+
+    $('#div').html(
+        '<a href="' + link + '">...</a>'
+    );
+
+    //This function makes the action of the cancel edit plant password button go to the garden details page when pressing enter and clicking
+    function cancelEditPlantAction(event) {
+        event.preventDefault();
+        window.location.href = link
+    }
+
+    /*]]>*/
+</script>
+
+</html>
+
+<script th:src="@{/js/upload-image.js}"></script>
+<script th:src="@{/js/suppress-enter-submission.js}" data-allowed-types="submit,date,button"></script>
+<script th:src="@{/js/custom-date-error-message.js}" data-date-field-names="datePlanted"></script>

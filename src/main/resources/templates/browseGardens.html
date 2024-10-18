@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" context="text/html; charset=UTF-8">
+        <title>Browse Gardens</title>
+        <link th:href="@{/css/styles.css}" rel="stylesheet">
+        <link rel="icon" type="image/x-icon" href='../../img/grapevine-logo-small.svg'>
+    </head>
+    <body>
+        <div th:replace="fragments/navbar.html :: nav-bar(${gardens})"></div>
+        <div class="viewGardenBody">
+            <div class="viewGardenContainer">
+
+                <div class="gardenViewName">
+                    <div class="title">Browse Gardens</div>
+                </div>
+
+                <!--/*@thymesVar id="modulus" type=""*/-->
+                <div class="gardenViewDetails">
+
+                    <!-- Add tags to filter -->
+                    <span class="details">Search</span>
+
+                    <form th:action="@{/garden/browse}" method="get">
+                        <input type="text"  class="filterInput" name="search" placeholder="Search for gardens" th:value="${browseGardenDTO.getSearch()}" maxlength="512" tabindex="1">
+                        <div>
+                            <div style="display: flex; flex-direction: column; width: min-content">
+                                <div style="display: flex; flex-direction: row; align-content: center">
+                                    <input type="text" id="tagInput" placeholder="Filter by tag" name="tag" maxlength="25" tabindex="1"/>
+                                    <input id="tagInputButton" type="button" class="tagSubmit edit" value="+" tabindex="1">
+                                </div>
+                                <div id="tag-autofill-suggestions-container" style="margin-top: 3px"></div>
+                            </div>
+                            <p id="tagError" style="color:red;">
+                            <div id="displayTags"></div>
+                        </div>
+                        <input type="text" name="tags" id="tags" style="visibility: hidden; width: 0" th:value="${browseGardenDTO.getTagsToString()}"><!-- Hidden input for tags, this allows tags to be submitted upon form submission -->
+                        <button class="submit" id="search-button" type="submit"><span class="small-button-text" tabindex="1" >Search</span></button>
+                    </form>
+
+                    <!-- No gardens found -->
+                    <span class="error" th:if="${browseGardenDTO.getSearchError()}" th:text="${browseGardenDTO.getSearchError()}" style="color: #e01b24"></span>
+                    <span class="search-container-result" th:if="${#lists.isEmpty(browseGardenDTO.getGardens())}" th:unless="${browseGardenDTO.getSearchError()}">Search for gardens by name or plant</span>
+                    <br>
+                    <div th:if="${browseGardenDTO.getTotalPages()}" class="feed-pagination-results">
+                        <!-- Displays text 'Showing Results x to y of z', inline calculations to determine x y and z -->
+                        <span th:if="${browseGardenDTO.getTotalPages()}" th:unless="${browseGardenDTO.getSearchError()}" th:text="${'Showing results '
+                         + (((browseGardenDTO.getParsedPage() - 1) * browseGardenDTO.getPageSize()) + 1)
+                         + ' to '
+                         + ((browseGardenDTO.getParsedPage() * browseGardenDTO.getPageSize()) < browseGardenDTO.getGardens().size() ? (browseGardenDTO.getParsedPage() * browseGardenDTO.getPageSize()) : (((browseGardenDTO.getParsedPage() - 1) * browseGardenDTO.getPageSize()) + browseGardenDTO.getGardens().size()))
+                         + ' of '
+                         + (browseGardenDTO.getSearchSize()) }"></span>
+                    </div>
+                </div>
+
+                <div class="public-gardens-container">
+
+                    <!-- Garden Cards -->
+                    <a class="public-garden" th:href="@{'/garden/' + ${garden.getGardenId}}" th:each="garden: ${browseGardenDTO.getGardens()}">
+                        <div class="public-garden-content">
+
+                            <div class="public-garden-name">
+                                <span class="value" th:text="${#strings.abbreviate(garden.getName,60)}"></span>
+                            </div>
+
+                            <div class="info" id="garden-tile-info">
+                                <div class="garden-content-top">
+
+                                    <p>
+                                        <span class="details">Location: </span>
+                                        <span th:text="${garden.getLocation.formatShortLocation()}"></span>
+                                    </p>
+                                    <p>
+                                        <span class="details">Size: </span>
+                                        <span th:text="${garden.getSize}"></span>
+                                    </p>
+                                    <p>
+                                        <span class="details">Owner: </span>
+                                        <span th:text="${garden.getUser.getEmail}"></span>
+                                    </p>
+
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Pagination Fragment -->
+                <div th:replace="fragments/pagination.html :: pagination(${browseGardenDTO.getTotalPages()}, ${browseGardenDTO.getParsedPage()}, ${browseGardenDTO.getSearch()}, 'browse')"></div>
+
+            </div>
+        </div>
+        <script th:src="@{/js/browse-garden-tags.js}"></script>
+    </body>
+
+</html>
+

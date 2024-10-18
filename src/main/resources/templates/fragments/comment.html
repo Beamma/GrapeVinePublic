@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+
+<div class="comment" th:fragment="postComment(comment)" th:data-comment-id="${comment.id}">
+    <a th:href="@{'/user/profile/' + ${comment.user.id}}">
+        <img th:src="${comment.user.getProfileImageBase64()}" class="small-profile-image"
+             onerror="this.onerror=null; this.src='../img/profileicon.png';">
+    </a>
+    <div class="comment-content">
+        <div class="comment-heading">
+            <span th:text="${comment.user.firstName} + ${comment.user.getNoLastName() ? '' : ' ' + comment.user.lastName}"></span>
+            <span th:text="${comment.getTimeSincePosted()}"></span>
+        </div>
+        <div class="comment-body">
+            <span th:text="${comment.text}"></span>
+            <div class="comment-like-and-reply-buttons-container">
+                <span th:id="'comment-like-count-' + ${comment.getId()}"  th:onload="loadCommentLikes([[${comment.Id}]])" th:text="0" class="like-count"></span>
+                <img th:src="@{/img/unliked-heart.svg}" th:onclick="commentLikeButtonClicked([[${comment.getId()}]])" th:id="'comment-heart-icon-' + ${comment.id}" style="margin-left: 10px; cursor: pointer ">
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+
+</html>

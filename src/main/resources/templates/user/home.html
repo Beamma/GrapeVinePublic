@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://thymeleaf.org">
+    <head>
+        <meta http-equiv="Content-Type" context="text/html; charset=UTF-8">
+        <title>Welcome to GrapeVine</title>
+        <link th:href="@{/css/styles.css}" rel="stylesheet">
+        <link rel="icon" type="image/x-icon" href='../../img/grapevine-logo-small.svg'>
+    </head>
+    <body>
+        <div th:replace="fragments/navbar.html :: nav-bar(${gardens})"></div>
+        <div class="feed-body">
+            <div class="feed-container home-container">
+                <br>
+                <h2 class="home-title">WELCOME TO</h2>
+                <img th:src="@{/img/grapevine-logo.svg}" class="logo-img" width="50%" alt="GrapeVine">
+                <h2 class="home-title">By Team T-reX</h2>
+                <img th:src="@{/img/app-screens.svg}" class="home-img" alt="Laptop, tablet and phone showing different pages of the Gardener's Grove application.">
+                <p class="home-text">
+                    GrapeVine is the perfect home for gardeners everywhere, whether you are trying to help grow the next generation of gardeners, or just sprouting, you’ll find your community on the GrapeVine.
+                </p>
+                <p class="home-text">
+                    Track your gardens and plants to see the fruits of your labour bloom, or get inspired by the incredible gardens shared from all around the world - including your next project!
+                </p>
+                <p class="home-text">
+                    Engage with your community by making posts: get some advice on how to grow the biggest watermelons, show off a beautiful sunset over your backyard, or even share a selfie during your gardening mahi on a hot summer afternoon, and bond with other horticulturalists in the comments!
+                </p>
+                <p class="home-text">
+                    If that’s not enough sate your appetite, weed through the assortment of live streams or even create your own to share your tips and tricks, or share the satisfaction of whipping up a delicious salad from scratch. If you’re not gardening yourself, join a stream and chat with other green-thumbed fans to share your thoughts or ask questions to the creator.
+                </p>
+                <p class="home-text">
+                    Whether you want to show off your sprawling orchard, or get advice on how to keep your first ever potted plant flourishing, you’ll find it on the GrapeVine.
+                </p>
+                <img th:src="@{/img/phone-gardens.svg}" class="home-img" alt="Garden images and likes coming out of a phone.">
+            </div>
+        </div>
+    </body>
+</html>

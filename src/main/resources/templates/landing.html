@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Welcome to GrapeVine</title>
+    <link th:href="@{/css/styles.css}" rel="stylesheet">
+    <script th:src="@{/js/toggle-colour-scheme.js}"></script>
+    <link rel="icon" type="image/x-icon" href='../../img/grapevine-logo-small.svg'>
+</head>
+
+<body>
+<div class="outer-container">
+    <div class="inner-container">
+        <span class="welcome-message">Welcome to GrapeVine!</span>
+        <div class="button-container">
+            <button class="cancel">
+                <span th:href="@{/auth/login}">Sign In</span>
+            </button>
+            <button class="submit">
+                <span th:href="@{/auth/register}">Register</span>
+            </button>
+        </div>
+    </div>
+</div>
+</body>
+<script th:src="@{/js/suppress-enter-submission.js}" data-allowed-types="submit,cancel"></script>
+</html>

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta http-equiv="Content-Type" context="text/html; charset=UTF-8">
+    <title>Create New Garden</title>
+    <link th:href="@{/css/styles.css}" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href='../../img/grapevine-logo-small.svg'>
+</head>
+<body>
+<div th:replace="fragments/navbar.html :: nav-bar(${gardens})"></div>
+<div class="gardenBackButton">
+    <button class="backButton cancel" onclick="goPrev()">
+        <span><img th:replace="fragments/icons.html :: arrow-left">Back</span>
+    </button>
+</div>
+<div class="viewGardenBody">
+    <div class="viewGardenContainer">
+        <div class="gardenViewName">
+            <span class="value" th:text="${garden.getName}"></span>
+            <div class="gardenViewEdit" th:if="${owner} == true">
+                <div class="button-container">
+                    <button type="button" class="edit">
+                        <a th:href="@{'/garden/add/' + ${garden.gardenId}}">
+                            <span>Edit </span><img th:replace="fragments/icons.html :: pencil">
+                        </a>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="gardenViewDetails">
+            <span class="details">Location</span>
+            <span class="value" th:text="${garden.getLocation.formatLocation()}"></span>
+        </div>
+        <div class="gardenViewDetails" th:if="${garden.getSize}">
+            <span class="details">Size (m<sup>2</sup>)</span>
+            <span class="value" th:text="${garden.getSize}"></span>
+        </div>
+        <div>
+            <div class="chipContainer">
+                <div class="gardenViewDetails">
+                    <span class="details">Tags</span>
+                </div>
+                <div class="chip" th:each="tag: ${garden.getTagsOrdered()}">
+                    <span th:text="${tag.getName()}"></span>
+                </div>
+            </div>
+            <form id="tagForm" th:action="@{'/garden/' + ${garden.getGardenId} + '/tag'}" th:method="put"
+                  th:if="${owner} == true" autocomplete="off">
+                <label>
+                    <div class="add-tag-container">
+                        <input id="add-tag-field" type="text" th:value="${invalidTag}" placeholder="Add Tag" name="tag" maxlength="512"
+                               oninput="showTagAutoCompleteOnTypeBasedOnTagsAttribute()"/>
+                        <div id="tag-autocomplete" class="tag-autocomplete">
+                        </div>
+                        <input id="plus-button" type="submit" class="tagSubmit edit" value="+">
+                    </div>
+                    <span class="user-name" th:text="${tagError}" style="color: #e01b24;"></span>
+                </label>
+            </form>
+        </div>
+        <div class="gardenViewDetails">
+            <span class="details">Description</span>
+            <textarea readonly class="description-view" rows="15" cols="60"
+                      name="description"></textarea>
+            <script th:inline="javascript">
+                /*<![CDATA[*/
+                var description = /*[[${garden.getDescription}]]*/ 'text';
+                document.getElementsByName("description")[0].value = description
+                /*]]>*/
+            </script>
+        </div>
+        <div class="gardenViewDetails">
+            <span class="details">Weather</span>
+            <div class="weatherBar" th:if="${weatherConditions != null && !weatherConditions.hasErrors()}">
+                <div class="weatherCard" th:each="weather: ${weatherConditions.getWeatherConditions}">
+                    <span style="font-weight: bold" th:text="${weather.getDay()}"></span>
+                    <span style="font-style: italic" th:text="${weather.getDate()}"></span>
+                    <img th:src="${weather.getIcon()}" th:if="${weather.getIcon()}" alt="Weather Icon"/>
+                    <span th:text="${weather.getDescription()}"></span>
+                    <span th:text="${'Temp: ' + weather.getTempC() + '&deg;C'}"></span>
+                    <span th:text="${'Humidity: ' + weather.getHumidity + '%'}"></span>
+                    <span th:text="${'Wind: ' + weather.getMaxWind() + 'kph'}"></span>
+                </div>
+            </div>
+        </div>
+        <div class="weatherError" th:if="${weatherConditions != null && weatherConditions.hasErrors()} == true">
+            <span class="error-message">Location not found, please update your location to see the weather</span>
+        </div>
+        <div class="gardenViewEdit" th:if="${owner} == true">
+            <div class="gardenViewDetails">
+                <div class="make-garden-public" th:if="${owner} == true">
+                    <span class="details">Make my garden public</span>
+                    <form th:action="@{'/garden/' + ${garden.getGardenId}}" th:method="put">
+                        <div class="public-form-container">
+                            <input type="checkbox" id="isPublic" name="isPublic"
+                                   th:checked="${garden.isPublicGarden}" value="true">
+                        </div>
+                    </form>
+                </div>
+                <span class="successful-edit-details" th:if="${editSuccessful}">Garden updated successfully</span>
+
+                <div class="gardenAddPlant" th:if="${owner} == true">
+                    <div class="garden-view-add-plant" th:if="${owner} == true">
+                        <div class="button-container">
+                            <button id="add-plant-button" type="button" class="submit">
+                                <a th:href="@{'/garden/' + ${garden.getGardenId} + '/plant'}">Add Plant<img
+                                        th:replace="fragments/icons.html :: plus"></a>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div th:if="${not garden.getPlants().isEmpty()}" class="plantsContainer">
+            <div class="plant" th:each="plant: ${garden.getPlants}">
+                <div class="plantViewName">
+                    <span class="value" th:text="${#strings.abbreviate(plant.getName,60)}"></span>
+                </div>
+                <div class="bottom">
+                    <div class="info">
+                        <div class="image-container">
+                            <img th:src="${plant.getPlantImageBase64}" th:if="${plant.getPlantImageSize}"></img>
+                            <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"
+                                 th:unless="${plant.getPlantImageSize}">
+                                <rect width="100" height="100" style="fill:lightgray;"/>
+                                <text x="50%" y="50%" text-anchor="middle" fill="black" font-size="16px" dy=".3em">No
+                                    Image
+                                </text>
+                            </svg>
+                        </div>
+                        <span class="details">Count</span>
+                        <p th:text="${plant.getCount}"></p>
+                        <span class="details" th:if="${plant.getDatePlanted}">Date Planted</span>
+                        <p th:text="${#dates.format(plant.getDatePlanted, 'dd-MMM-yyyy')}"></p>
+
+                        <button type="button" class="edit" th:if="${owner} == true">
+                            <a th:href="@{'/garden/' + ${garden.getGardenId} + '/plant/' + ${plant.getPlantId}}">
+                                <span>Edit Plant </span>
+                                <img th:replace="fragments/icons.html :: pencil">
+                            </a>
+                        </button>
+
+                    </div>
+                    <div class="description" th:if="${plant.getDescription()} != ''">
+                        <span class="details" th:if="${plant.getDescription}">Description</span>
+                        <p class="view-description" th:text="${plant.getDescription}"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="weatherAlertWater"
+     th:unless="${weatherConditions == null || weatherMessage == null|| (weatherMessageDismissed || weatherConditions.hasErrors())}"
+     class="weatherAlert" role="alert">
+    <span th:text="${weatherMessage}"></span>
+    <a th:href="@{'/garden/' + ${garden.gardenId} + '/dismiss-weather'}">
+
+        <button type="button" class="weatherAlertClose" data-dismiss="alert" aria-label="Close"
+                onclick="dismissWaterMessage()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </a>
+</div>
+<div th:replace="fragments/inappropriate-warning-modal.html"></div>
+<script th:src="@{/js/dismiss-weather-alert.js}"></script>
+<script th:src="@{/js/cancel-button-redirect.js}"></script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+
+    document.getElementById('isPublic').addEventListener('change', function () {
+        this.form.submit();
+    });
+    document.getElementById('plus-button').addEventListener('click', function () {
+        document.getElementById("tag-autocomplete").innerHTML = ""
+        document.getElementById('tagForm').submit();
+    });
+
+    let activeTag = -1;
+
+    const tagForm = document.getElementById('tagForm');
+    const tagAutocomplete = document.getElementById('tag-autocomplete');
+    //const tagAutocompleteItems = tagAutocomplete.children;
+    var fifthInappropriateTag = /*[[${fifthInappropriateTag}]]*/ 'false';
+
+    tagForm.addEventListener('keydown', function (event) {
+        const tagAutocompleteItems = tagAutocomplete.children;
+        let tagField = document.getElementById('add-tag-field');
+
+        //https://www.youtube.com/watch?v=8uaKa8M3bOg implementing key press with JS
+
+        if (event.key === "ArrowUp") { //uparrow
+            event.preventDefault()
+            if (activeTag > 2) {
+                activeTag -= 2;
+                tagAutocompleteItems[activeTag].focus();
+            } else {
+                activeTag = -1
+                setInvisibleTagAutocomplete()
+                tagField.focus()
+            }
+        } else if (event.key === "ArrowDown") { //downarrow
+            if (activeTag < tagAutocompleteItems.length - 2) {
+                event.preventDefault()
+                activeTag += 2;
+                tagAutocompleteItems[activeTag].focus();
+            }
+        }
+    })
+
+    /**
+     * Show tag autocomplete based on the thymeleaf tags attribute
+     */
+    function showTagAutoCompleteOnTypeBasedOnTagsAttribute() {
+        var tags = /*[[${tags}]]*/ 'text';
+        var tagIndex = null;
+        let tagField = document.getElementById('add-tag-field');
+        var tagForm = document.getElementById('tagForm')
+        var tagAutocomplete = document.getElementById('tag-autocomplete');
+        tagField.addEventListener('input', function () {
+            tagAutocomplete.innerHTML = '';
+            var inputString = tagField.value;
+            setInvisibleTagAutocomplete()
+            if (inputString.length > 2) {
+                tags.sort()
+                let matchingTags = []
+                tags.forEach(t => {
+                    if (t.name.toLowerCase().includes(inputString.toLowerCase())) {
+                        matchingTags.push(t)
+                    }
+                })
+                matchingTags = matchingTags.slice(0, 5)
+
+                matchingTags.forEach(function (tag) {
+                    tagIndex = tags.indexOf(tag)
+                    tag = tag.name
+                    setVisibleTagAutocomplete()
+                    let input = document.createElement('input');
+                    input.setAttribute('type', 'hidden');
+                    input.setAttribute('name', 'tag');
+                    input.setAttribute('value', tag);
+                    let button = document.createElement('button');
+                    let buttonFocused = false;
+                    button.setAttribute('type', 'submit');
+                    button.setAttribute('id', 'tag-button' + tagIndex)
+                    button.setAttribute('class', 'autocomplete-tag-button')
+                    button.textContent = tag;
+                    button.addEventListener('focusin', function () {
+                        buttonFocused = true;
+                    });
+                    button.addEventListener('focusout', function () {
+                        buttonFocused = false;
+                    });
+
+                    tagAutocomplete.appendChild(input);
+                    tagAutocomplete.appendChild(button);
+
+
+                    tagForm.addEventListener('keydown', function (event) {
+
+                        if (event.key === 'Enter' && (tagField === document.activeElement)) {
+                            tagAutocomplete.innerHTML = '';
+                            tagForm.submit()
+                            return
+                        }
+
+                        if (event.key === 'Enter' && (document.getElementById('tag-button' + tagIndex).hasFocus())) {
+                            tagAutocomplete.innerHTML = '';
+                            tagForm.submit()
+                            return
+                        }
+
+                        if (event.key === 'Enter' && !(tags.some(tag => tag.tag === tagField.value))) {
+                            tagAutocomplete.innerHTML = '';
+                            setInvisibleTagAutocomplete()
+                        }
+                    })
+
+                    button.addEventListener('click', function () {
+                        setInvisibleTagAutocomplete()
+                        tagAutocomplete.innerHTML = '';
+                        tagField.value = tag;
+                        tagForm.submit()
+                    });
+
+                });
+            }
+        });
+
+    }
+
+    function setVisibleTagAutocomplete() {
+        var tagAutocomplete = document.getElementById('tag-autocomplete');
+        tagAutocomplete.classList.add('visible')
+        tagForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+        });
+    }
+
+    function setInvisibleTagAutocomplete() {
+        var tagAutocomplete = document.getElementById('tag-autocomplete');
+        tagAutocomplete.classList.remove('visible')
+        tagForm.removeEventListener('submit', function (event) {
+            event.preventDefault();
+        });
+    }
+
+    function hideFifthInappropriateTagModal() {
+        document.getElementById('fifth-inappropriate-tag-modal').style.display = 'none';
+    }
+
+    /*]]>*/
+</script>
+</body>
+</html>

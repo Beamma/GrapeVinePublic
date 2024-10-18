@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" context="text/html; charset=UTF-8">
+    <title>Create New Post</title>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <link th:href="@{/css/styles.css}" rel="stylesheet">
+    <script th:src="@{/js/repopulate-image.js}"></script>
+    <link rel="icon" type="image/x-icon" href='../../img/grapevine-logo-small.svg'>
+</head>
+<div th:replace="fragments/navbar.html :: nav-bar(${gardens})"></div>
+
+<body>
+<div class="createGardenBody">
+    <div class="container">
+        <div class="title">Create Post</div>
+
+        <form th:action="@{'/post/add'}"
+              th:method="post"
+              th:object="${postDTO}"
+              enctype="multipart/form-data">
+
+            <div class="garden-details">
+                <div class="input-box">
+                    <span class="details">Post Title</span>
+                    <input type="text" placeholder="e.g. My New Post" th:field="*{title}">
+                    <span th:if="${#fields.hasErrors('title')}" th:errors="*{title}" style="color: red;"></span>
+                </div>
+
+                <input style="display: none" th:field="*{gardenId}" id="linked-garden-id-input">
+
+                <div class="input-box">
+                    <span class="details required">Content</span>
+                    <div class="flex-row">
+                        <textarea rows="5" cols="60" type="text" id='content' class="post-content" name="content"
+                                  th:field="*{content}"
+                                  th:style="${#fields.hasErrors('content') == null ? 'border-color: var(--red-button-hover-bg);' : 'border-color: var(--text-box-outline);'}">
+                            </textarea>
+                    </div>
+                    <span th:if="${#fields.hasErrors('content')}" th:errors="*{content}" style="color: red;"></span>
+                </div>
+
+                <div class="flex-row rel">
+                    <button th:onclick="showLinkGardenModal()" type="button" id="show-link-modal-preview-button"
+                            class="edit"><span>Link Garden +</span></button>
+                    <!--Link Garden Modal-->
+                    <div id="link-garden-modal" class="search-modal">
+                        <button type="button" onclick="hideLinkGardenModal()" class="close-modal-button" tabindex="2">
+                            &#x2715;
+                        </button>
+                        <div class="search-box">
+                            <input type="text" placeholder="Search your gardens..." name="search-gardens-to-link"
+                                   id="search-gardens-to-link">
+                            <label type="button" onclick="showSearchedGardens()">
+                                <img style="height: 25px" th:src="@{/img/magnifying-glass.svg}">
+                            </label>
+                        </div>
+                        <ol id="link-garden-search-results"></ol>
+                        <span class="link-garden-results-limit-message">Please refine your query to see more results</span>
+                        <span class="link-garden-error-message"></span>
+                    </div>
+                </div>
+
+                <!--                Preview of Linked Garden-->
+                <div class="input-box flex-col" style="display: none" id="linked-garden-preview">
+                    <span class="details">Linked Garden</span>
+                    <div class="linked-garden-preview">
+                        <div class="flex-row hide-overflow">
+                            <span id="linked-garden-name"></span>
+                            <span id="linked-garden-city"></span>
+                        </div>
+                        <button type="button" class="remove-linked-garden-button" th:onclick="removeLinkedGarden()">
+                            &#x2715;
+                        </button>
+                    </div>
+                </div>
+
+                <div class="input-box">
+                    <span class="details">Image</span>
+                    <div class="post-image-drop-zone" id="image-drop-zone" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);"
+                         th:style="${#fields.hasErrors('image') == null ? 'border-color: #ff0000;' : 'border-color: var(--text-box-outline);'}">
+                        <div class="add-image-button-container">
+                            <button onclick="upload();" type="button" id="add-image-button" class="add-image-button">
+                                <img th:src="@{/img/add-image-icon.svg}"/>
+                            </button>
+                            <span onclick="upload();">Click icon or drag and drop to add an image</span>
+                        </div>
+                        <div id="image-preview-container">
+                            <img id="image-preview"/>
+                            <button type="button" onclick="openImageDiscardConfirmation()" class="close-modal-button">
+                                &#x2715;
+                            </button>
+                        </div>
+                        <div id="input_container">
+                            <input type="file" id="add-post-image" th:field="*{image}"
+                                   accept="image/png, image/jpeg, image/jpg, image/svg+xml"/>
+                        </div>
+
+                    </div>
+                    <div class="image-error-message">
+                        <span id="post-image-field-error" th:if="${#fields.hasErrors('image')}" th:errors="*{image}"></span>
+                        <span id="client-side-img-val"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="button-container">
+                <button class="cancel" type="button" onclick="cancelAction()" id="cancel">
+                    <span>Cancel</span>
+                </button>
+                <button type="submit" class="submit">
+                    <span>Post</span>
+                </button>
+            </div>
+
+            <!--            Repopulates image field after an invalid submission-->
+            <script th:if="${postDTO.imageExists()} and !${#fields.hasErrors('image')}" th:inline="javascript">
+                let base64Image = /*[[${postDTO.getImagePreview()}]]*/;
+                let imageType = /*[[${postDTO.image.getContentType()}]]*/;
+                let imageName = /*[[${postDTO.image.getOriginalFilename()}]]*/;
+                repopulateImageField(base64Image, imageType, imageName)
+            </script>
+
+        </form>
+    </div>
+</div>
+
+<!-- Confirmation Dialogue-->
+<div id="confirm-overlay" class="confirm-overlay">
+    <div id="confirm-overlay-container" class="confirm-overlay-container">
+        <p>Are you sure you want to discard this post?</p>
+        <div class="button-container">
+            <button class="cancel" type="button" id="confirm-no" onclick="confirmNo()">
+                <Span>No</Span>
+            </button>
+            <button class="edit confirm-yes" type="button" id="confirm-yes" onclick="confirmYes()">
+                <Span>Yes</Span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Dialogue-->
+<div id="confirm-image-discard-overlay" class="confirm-overlay">
+    <div id="confirm-image-discard-overlay-container" class="confirm-overlay-container">
+        <p>Are you sure you want to discard this image?</p>
+        <div class="button-container">
+            <button class="cancel" type="button" id="confirm-no-image" onclick="cancelDiscardImage()">
+                <Span>No</Span>
+            </button>
+            <button class="edit confirm-yes" type="button" id="confirm-yes-image" onclick="confirmDiscardImage()">
+                <Span>Yes</Span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments/inappropriate-warning-modal.html"></div>
+<script th:src="@{/js/link-garden.js}" defer></script>
+</body>
+<script>
+    document.getElementById("content").addEventListener("keypress", e => {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+
+            e.currentTarget.closest("form").submit();
+        }
+    });
+</script>
+<script th:inline="javascript" defer>
+    document.addEventListener('DOMContentLoaded', function () {
+        /*<![CDATA[*/
+        var repopulatedLinkedGarden = /*[[${linkedGarden}]]*/ null;
+        if (repopulatedLinkedGarden) {
+            linkGarden(parseInt(repopulatedLinkedGarden.gardenId), repopulatedLinkedGarden.name, repopulatedLinkedGarden.location.city)
+        }
+        /*]]>*/
+    });
+</script>
+<script th:src="@{/js/cancel-button-redirect.js}"></script>
+<script th:src="@{/js/upload-post-image.js}"></script>
+<script th:src="@{/js/confirm-cancel.js}"></script>
+<script th:src="@{/js/suppress-enter-submission.js}" data-allowed-types="submit,button"
+        data-allowed-ids="cancel,confirm-no,confirm-yes,content"></script>
+</html>

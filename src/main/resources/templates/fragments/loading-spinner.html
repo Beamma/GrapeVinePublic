@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<!--Source: https://loading.io/css/-->
+<div id="loadingGif" style="display:none; z-index: 200; position: absolute; left: calc(50% - 40px); top: 40%;" th:fragment="loading-spinner(message)" class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><p th:text="${message}"></p></div>
+</body>
+</html>

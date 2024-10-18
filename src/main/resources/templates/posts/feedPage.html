@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" context="text/html; charset=UTF-8">
+    <title>Feed</title>
+    <link th:href="@{/css/styles.css}" rel="stylesheet">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <script th:src="@{/js/like-comment.js}"></script>
+    <script th:src="@{/js/like-post.js}"></script>
+    <link rel="icon" type="image/x-icon" href='../../img/grapevine-logo-small.svg'>
+</head>
+<body>
+
+<!-- Nav Bar -->
+<div th:replace="fragments/navbar.html :: nav-bar(${gardens})"></div>
+
+<!-- Feed -->
+<div class="feed-body">
+    <div class="feed-header">
+
+        <!-- Feed Title & New Post Button -->
+        <div class="feed-header-top-row">
+            <div class="title">
+                Feed
+            </div>
+            <div class="create-post">
+                <button class="submit">
+                    <a th:href="@{'/post/add'}">New Post<img th:replace="fragments/icons.html :: plus"></a>
+                </button>
+                <!-- Harriet Chat Button -->
+<!--                <button class="submit" style="background: orange">-->
+<!--                    <a th:href="@{'/HarrietChat'}">Chat<img th:replace="fragments/icons.html :: plus"></a>-->
+<!--                </button>-->
+
+<!--                <button class="submit" style="background: orange" onclick="">-->
+<!--                    <a th:href="@{'/createChat'}">createChat<img th:replace="fragments/icons.html :: plus"></a>-->
+<!--                </button>-->
+
+            </div>
+        </div>
+    </div>
+    <br>
+    <div th:if="${browseFeedDTO.getTotalPages()}" class="feed-pagination-results">
+        <!-- Displays text 'Showing Results x to y of z', inline calculations to determine x y and z -->
+        <span th:if="${browseFeedDTO.getTotalPages()}" th:text="${'Showing results '
+                         + (((browseFeedDTO.getParsedPage() - 1) * browseFeedDTO.getPageSize()) + 1)
+                         + ' to '
+                         + ((browseFeedDTO.getParsedPage() * browseFeedDTO.getPageSize()) < browseFeedDTO.getPosts().size() ? (browseFeedDTO.getParsedPage() * browseFeedDTO.getPageSize()) : (((browseFeedDTO.getParsedPage() - 1) * browseFeedDTO.getPageSize()) + browseFeedDTO.getPosts().size()))
+                         + ' of '
+                         + browseFeedDTO.getNumberOfPosts()}"></span>
+    </div>
+
+    <!-- Post Container -->
+    <div class="feed-container">
+        <h4 class="empty-feed-div" th:if="${browseFeedDTO.getPosts.size() == 0}">Be the first to make a post!</h4>
+        <!-- Post Card -->
+        <div class="post-card" th:each="post: ${browseFeedDTO.getPosts()}" th:data-post-id="${post.id}">
+            <!-- Profile Image & Name -->
+            <div class="post-card-user-info">
+                <div id="left">
+                    <a th:href="@{'/user/profile/' + ${post.getOwner().getId}}" style="text-decoration:none;">
+                        <img th:src="${post.getOwner().getProfileImageBase64()}" class="small-profile-image"
+                             onerror="this.onerror=null; this.src='../img/profileicon.png';">
+                        <span th:if="${post.getOwner().getLastName() != null}"
+                              th:text="${post.getOwner().getFirstName() + ' ' + post.getOwner().getLastName()}"></span>
+                        <span th:if="${post.getOwner().getLastName() == null}"
+                              th:text="${post.getOwner().getFirstName()}"></span>
+                    </a>
+                </div>
+
+                <div id="right">
+                    <button th:if="${post.owner.id == navBarUser.id}" class="submit" onclick=showConfirmModal(this.closest("div[data-post-id]").getAttribute("data-post-id"))>
+                        Delete
+                        <!-- Rubbish bin svg icon with credit-->
+                        <!-- License: MIT. Made by Will Kelly: https://www.will-kelly.co.uk/ -->
+                        <svg width="1.5em" height="1.5em" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M7.69231 8.70833H5V8.16667H9.84615M7.69231 8.70833V19H16.3077V8.70833M7.69231
+                            8.70833H16.3077M16.3077 8.70833H19V8.16667H14.1538M9.84615 8.16667V6H14.1538V8.16667M9.84615 8.16667H14.1538"
+                                  stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M10 11V17" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M12 11V17" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M14 11V17" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <hr/>
+
+            <div class="post-card-post-content">
+
+                <!-- Post Title -->
+                <div class="post-card-title">
+                    <span th:text="${post.getTitle()}"></span>
+                </div>
+
+                <!-- Post Content -->
+                <div class="post-card-text-content">
+                    <p style="text-wrap: inherit; overflow-wrap: break-word" th:text="${post.getContent()}"></p>
+                </div>
+
+                <!-- Linked Garden -->
+                <div th:if="${post.getLinkedGarden() != null && post.getLinkedGarden().isPublicGarden}" class="post-card-linked-garden">
+                    <button class="edit" style="max-width: 100%;">
+                        <a th:href="@{'/garden/' + ${post.getLinkedGarden().getGardenId()}}">
+                            <span class="linked-garden-span" th:text="${post.getLinkedGarden().getName()}"></span>
+                        </a>
+                    </button>
+                </div>
+
+                <!-- Post Image -->
+                <div th:if="${post.getImagePath()}" class="post-card-image">
+                    <div class="image-container">
+                        <img class="post-image" th:src="@{/images/{fileName}(fileName=${post.getImagePath()})}" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Post reactions -->
+            <div class="post-card-reactions">
+                <div class="likes-and-comments">
+                    <!-- Heart icon -->
+                    <img class="heart-icon" th:id="'heart-icon-' + ${post.getId()}" th:onclick="postLikeButtonClicked([[${post.getId()}]])" style="cursor: pointer;">
+                    <span th:id="'like-count-' + ${post.getId()}" class="like-count"></span>
+                    <!-- Comment icon-->
+                    <button class="comment-icon" th:onclick="'showCommentForm(\'' + ${post.id} + '\')'" style="cursor: pointer;"><img th:replace="fragments/icons.html :: comment-outline"></button>
+                </div>
+                <!-- Posted Date -->
+                <div class="post-card-post-date">
+                    <span th:text="${post.getTimeSincePosted() + ' ago'}" style="font-style: italic"></span>
+                </div>
+            </div>
+            <!-- Comment Form -->
+            <div class="post-card-comment-form" th:id="'comment-form-' + ${post.getId()}" style="display: none">
+                <div class="comment-and-submit">
+                    <textarea th:id="'comment-input' + ${post.getId()}" placeholder="Enter your comment"></textarea>
+                    <button type="submit" class="post-card-comment-form-submit" th:onclick="'submitComment(\'' + ${post.id} + '\')'" th:id="'submit-comment-' + ${post.getId()}" style="cursor: pointer;">
+                        <img src="../img/send-comment.svg" th:id="'submit-comment-' + ${post.getId()} + '-icon'">
+                        <div class="loader" th:id="'submit-comment-' + ${post.getId()} + '-loader'"></div>
+                    </button>
+                </div>
+                <div th:id ="'comment-error-message' + ${post.getId()}" style="color: red; display: none"></div>
+            </div>
+            <!-- Comments List -->
+            <div class="post-card-comments" th:id="'post-card-comments-'+ ${post.getId()}">
+                <!--Display list of comments-->
+                <div th:each="comment: ${post.getComments()}"
+                     th:insert="fragments/comment.html :: postComment(${comment})"></div>
+            </div>
+                <button th:if="${post.getCommentsSize() > 3}" class="loadMoreComments" id="loadMoreComments" th:data-post-id="${post.getId()}">
+                    <i>See More Comments ...</i>
+                </button>
+
+        </div>
+        <!-- Pagination Fragment -->
+        <div th:replace="fragments/feedPagination.html :: pagination(${browseFeedDTO.getTotalPages()}, ${browseFeedDTO.getParsedPage()}, ${''}, 'browse')"></div>
+    </div>
+</div>
+<!-- Confirmation Dialogue-->
+<div id="confirm-overlay" class="confirm-overlay">
+    <div id="confirm-overlay-container" class="confirm-overlay-container">
+        <p>Are you sure you want to delete this post?</p>
+        <div class="button-container">
+            <button class="cancel" type="button" id="confirm-no" onclick="confirmNo()">
+                <Span>Cancel</Span>
+            </button>
+            <button class="edit confirm-yes" type="button" id="confirm-yes" onclick="confirmYes()">
+                <Span>Delete</Span>
+            </button>
+        </div>
+    </div>
+</div>
+<!-- Delete Popup -->
+<div id="delete-alert-popup" style="display: none">
+    <span id="delete-alert-span">Post has been deleted!</span>
+    <button type="button" class="weatherAlertClose" data-dismiss="alert" aria-label="Close"
+            onclick="dismissDeleteAlert()">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+<!--Input for keeping track of the posts that the user has added since feed page refresh-->
+<input type="text" id="new-comment-ids" style="visibility: hidden; width: 0">
+</body>
+<script th:src="@{/js/image-background-colour.js}"></script>
+<script>
+
+    //This is to allow the comment to submit when you press the enter key
+    let ids = "[[${allowedIds}]]"
+    const idArray = ids.split(",");
+    for (const id in idArray) {
+        document.getElementById(idArray[id]).addEventListener("keypress", e => {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                //Gets the post id by slicing the input fields id
+                let idString = idArray[id].substring(13,idArray[id].length)
+                let postId = parseInt(idString, 10)
+                const submitButton = document.getElementById("submit-comment-" + postId)
+                if (submitButton.disabled === false) {
+                    submitComment(postId)
+                }
+            }
+        });
+    }
+</script>
+<script th:src="@{/js/delete-post.js}"></script>
+<script th:src="@{/js/fetch-comments.js}"></script>
+<script th:src="@{/js/submit-comment.js}"></script>
+<script th:src="@{/js/suppress-enter-submission.js}" data-allowed-types="submit" th:data-allowed-ids="${allowedIds} +',confirm-yes,confirm-no'"></script>
+
+<script>
+    document.querySelectorAll('.comment').forEach(comment => {
+        const commentId = comment.dataset.commentId;
+        loadCommentLikeInformation(commentId);
+    });
+
+    document.querySelectorAll('.post-card').forEach(postCard => {
+        const postId = postCard.dataset.postId;
+        const postContent = postCard.getElementsByClassName('post-card-post-content')[0];
+        loadPostLikeInformation(postId);
+        postContent.addEventListener('dblclick', () => {
+            postCard.classList.add('post-card-shimmer')
+            setTimeout(() => {
+                postCard.classList.remove('post-card-shimmer')
+            }, 500);
+            postLikeButtonClicked(postId);
+        });
+
+    });
+
+
+</script>
+
+
+
+</html>

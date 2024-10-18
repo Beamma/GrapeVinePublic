@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" context="text/html; charset=UTF-8">
+        <title>Browse Live Streams</title>
+        <link th:href="@{/css/styles.css}" rel="stylesheet">
+        <link rel="icon" type="image/x-icon" href='../../img/grapevine-logo-small.svg'>
+    </head>
+        <body>
+            <!-- Nav Bar -->
+            <div th:replace="fragments/navbar.html :: nav-bar(${gardens})"></div>
+
+            <div class="browse-livestream-body">
+                <div class="browse-livestream-header">
+                    <!-- Livestream Title & New Livestream Button -->
+                    <div class="feed-header-top-row">
+                        <div class="title">
+                            Browse Livestreams
+                        </div>
+                        <div class="create-livestream">
+                            <!-- Create Livestream -->
+                            <button class="submit">
+                                <a th:href="@{'/livestream/create'}">Create Livestream</a>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <br>
+                <div th:if="${browseLiveStreamsDTO.getTotalPages()}" class="feed-pagination-results">
+                    <!-- Displays text 'Showing Results x to y of z', inline calculations to determine x y and z -->
+                    <span th:if="${browseLiveStreamsDTO.getTotalPages()}" th:text="${'Showing results '
+                         + (((browseLiveStreamsDTO.getParsedPage() - 1) * browseLiveStreamsDTO.getPageSize()) + 1)
+                         + ' to '
+                         + ((browseLiveStreamsDTO.getParsedPage() * browseLiveStreamsDTO.getPageSize()) < browseLiveStreamsDTO.getLivestreams().size() ? (browseLiveStreamsDTO.getParsedPage() * browseLiveStreamsDTO.getPageSize()) : (((browseLiveStreamsDTO.getParsedPage() - 1) * browseLiveStreamsDTO.getPageSize()) + browseLiveStreamsDTO.getLivestreams().size()))
+                         + ' of '
+                         + browseLiveStreamsDTO.getNumberOfLivestreams()}"></span>
+                </div>
+                <!-- Display livestreams -->
+                <br>
+                <!-- Live stream cards -->
+                <div class="browse-livestream-container">
+                    <div class="livestream-card" th:each="livestream: ${browseLiveStreamsDTO.getLivestreams()}">
+                        <a  th:href="@{'/livestream/browse/' + ${livestream.getId()}}">
+
+                            <!-- Livestream Thumbnail -->
+                            <div th:if="${livestream.getOwner().getProfileImageBase64()}" class="livestream-card-thumbnail">
+                                <div class="thumbnail-container">
+                                    <!-- use thumbnail image by default -->
+                                    <img th:if="${livestream.getImagePath() != 'fake/image/path' && livestream.getImagePath() != null}"
+                                         th:src="@{/images/{fileName}(fileName=${livestream.getImagePath()})}" alt="thumbnail" class="thumbnail-image"
+                                         onerror="this.onerror=null; this.src='../img/profileicon.png';"/>
+                                    <!-- use profile image if thumbnail image does not exist -->
+                                    <img th:if="${livestream.getImagePath() == 'fake/image/path' || livestream.getImagePath() == null}"
+                                         th:src="${livestream.getOwner().getProfileImageBase64()}" class="thumbnail-image"
+                                         onerror="this.onerror=null; this.src='../img/profileicon.png';">
+                                    <!--Livestream view count-->
+                                    <div class="livestream-card-view-count">
+                                        <img th:replace="fragments/icons.html :: viewers">
+                                        <span th:id="'viewer-count-text-' + ${livestream.getId()}" class="viewer-count-text" th:data-value="${livestream.getId()}">0</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!--Livestream information-->
+                            <div class="livestream-card-information">
+                                <div class="livestream-card-title">
+                                    <a th:href="@{'/livestream/browse/' + ${livestream.getId()}}" style="text-decoration: none;">
+                                        <span class="value" th:text="${livestream.getTitle()}"></span>
+                                    </a>
+                                </div>
+                                <br>
+                                <div class="livestream-card-owner-and-view-count">
+                                    <div class="livestream-card-streamer-info">
+                                        <a th:href="@{'/user/profile/' + ${livestream.getOwner().getId}}" style="text-decoration:none; display: flex; align-items: center;">
+                                            <img th:src="${livestream.getOwner().getProfileImageBase64()}" class="small-profile-image"
+                                                 onerror="this.onerror=null; this.src='../img/profileicon.png';" style="margin-right: 10px">
+                                            <span th:if="${livestream.getOwner().getLastName() != null}"
+                                                  th:text="${livestream.getOwner().getFirstName() + ' ' + livestream.getOwner().getLastName()}" class="livestream-card-streamer-name"></span>
+                                            <span th:if="${livestream.getOwner().getLastName() == null}"
+                                                  th:text="${livestream.getOwner().getFirstName()}" class="livestream-card-streamer-name"></span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                        </div>
+
+                    </div>
+            </div>
+            <script th:src="@{/js/image-background-colour.js}"></script>
+            <script th:src="@{/js/viewer-count.js}"></script>
+            <div th:replace="fragments/pagination.html :: pagination(${browseLiveStreamsDTO.getTotalPages()}, ${browseLiveStreamsDTO.getParsedPage()}, ${null}, 'browse')"></div>
+        </body>
+</html>

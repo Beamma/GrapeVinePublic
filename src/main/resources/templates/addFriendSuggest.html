@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" context="text/html; charset=UTF-8">
+    <title>Add User</title>
+    <link th:href="@{/css/styles.css}" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href='../../img/grapevine-logo-small.svg'>
+</head>
+<body>
+<div class="blocked-modal">
+    <div class="blocked-modal-content">
+        <h1 th:text="${user.getLastName() == null} ? 'You must be friends with ' + ${user.getFirstName()} + ' to view their profile' : 'You must be friends with ' + ${user.getFirstName()} + ' ' + ${user.getLastName()} + ' to view their profile'"></h1>
+
+        <div class="button-container" style="padding-top: 40px">
+            <button class="cancel"onclick="goPrev()">
+                <span><img th:replace="fragments/icons.html :: arrow-left">Back</span>
+            </button>
+            <form th:action="@{/manage/friends/add}" method="post">
+                    <button class="addFriendSubmit" name="add-friend" th:value="${user.getId}">Add As Friend</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+<script th:src="@{/js/cancel-button-redirect.js}"></script>
+</html>

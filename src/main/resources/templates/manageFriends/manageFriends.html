@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Gardeners Grove</title>
+    <link th:href="@{/css/styles.css}" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href='../../img/grapevine-logo-small.svg'>
+</head>
+<body>
+<div th:replace="fragments/navbar.html :: nav-bar(${gardens})"></div>
+<div class="manage-friends">
+    <div class="container">
+        <h1 class="title">Friend Page</h1>
+        <br/>
+        <div class="search">
+            <button id="addNewFriendButton" class="submit" value="addFriend" onclick=showSearch()>
+                <span>New Friend<img th:replace="fragments/icons.html :: plus"></span>
+            </button>
+        </div>
+        <span class="user-name" th:text="${error}" style="color: #e01b24;"></span>
+
+        <h2 class="heading">Friend Requests</h2>
+        <div class="requests">
+            <form th:action="@{/manage/friends/request}" method="post" th:unless="${requests.isEmpty()}">
+                <div class="request" th:each="request: ${requests}" style="display: flex; flex-direction: row; margin-bottom: 5px">
+                    <span class="user-name" th:text="${request.sender.getFirstName}" style="margin-right: 5px;"></span>
+                    <span class="user-last-name" th:text="${request.sender.getLastName}" style="margin-right: 5px;"></span>
+                    <span class="user-email" th:text="${request.sender.getEmail}" style="margin-right: 5px;"></span>
+                    <span class="status" th:text="${request.getStatus}" style="margin-right: 5px;"></span>
+                    <div style="display: flex; flex-direction: row;">
+                        <button class="submit" name="accept" th:value="${request.getFriendId}" style="margin-right: 3px;">
+                            <span class="small-button-text">Accept</span>
+                        </button>
+                        <button class="cancel" name="decline" th:value="${request.getFriendId}">
+                            <span class="small-button-text">Decline</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <span class="no-requests" th:if="${requests.isEmpty()}">No Incoming Requests</span>
+        </div>
+
+        <h2 class="heading">Sent Requests</h2>
+        <div class="sentRequest sentRequests" th:each="sentRequest: ${sentRequests}" style="width: 100%; margin-bottom: 5px">
+            <div class="sentRequestInner">
+                <span class="user-name" th:text="${sentRequest.recipient.getFirstName}" style="padding-right: 5px;"></span>
+                <span class="user-last-name" th:text="${sentRequest.recipient.getLastName}" style="padding-right: 5px;"></span>
+                <span class="user-email" th:text="${sentRequest.recipient.getEmail}" style="padding-right: 5px;"></span>
+                <span class="status" th:text="${sentRequest.getStatus}" style="padding-right: 5px;"></span>
+                <form th:method="delete" th:action="@{/manage/friends/request/cancel}" th:if="${sentRequest.getStatus()} == 'pending'" style="float: right">
+                    <input type="hidden" name="friendId" th:value="${sentRequest.getFriendId()}"/>
+                    <button class="cancel">
+                        <span style="padding-top: 5px; padding-bottom: 5px;">Cancel Request</span>
+                    </button>
+                </form>
+            </div>
+            <span class="no-requests" th:if="${sentRequests.isEmpty()}">No Outgoing Requests</span>
+        </div>
+            <h2 class="heading">Friends</h2>
+            <div class="friends">
+                <div class="friend-grid" >
+                    <div class="friend" th:each="friend: ${friends}">
+                        <a th:href="@{'/user/profile/' + ${friend.getId}}">
+                            <img class="profile-picture" th:src="${friend.getProfileImageBase64}" onerror="this.onerror=null; this.src='../img/profileicon.png';" alt="Profile Picture">
+                        </a>
+                        <div class="friend-details">
+                            <a class="friend-link" th:href="@{'/user/profile/' + ${friend.getId}}">
+                                <span class="name" th:text="${friend.getFirstName}"></span>
+                                <span class="name" th:text="${friend.getLastName}"></span>
+                            </a>
+                            <a class="garden-list-link" th:href="@{'/garden/list/' + ${friend.getId}}">View Gardens</a>
+                            <span class="email" th:text="${friend.getEmail}"></span>
+                            <button id="remove-friend-button" class="removeFriend" th:friend-id="${friend.getId}" onclick=openRemoveFriendModal(this.getAttribute('friend-id'))>
+                                Remove Friend
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <div class="search-container-content" id="search-container-content">
+        <button type="button" onclick="hideSearch()" class="close-modal-button" tabindex="2">
+            &#x2715;
+        </button>
+        <form th:action="@{/manage/friends}" method="get"  style="display: flex; flex-direction: row;">
+            <input id="searchInput" type="text" class="resize-text-input" name="search" placeholder="Search for users" th:value="${search}" maxlength="512" tabindex="1" autofocus>
+            <button id="search-button" type="submit" class="submit" style="margin-left: 2px;">
+                <span style="font-size: 14px; padding: 5px inherit;" tabindex="1">Search</span>
+            </button>
+        </form>
+        <div class="searched-users">
+            <form th:action="@{/manage/friends/add}" method="post" th:unless="${#lists.isEmpty(users)}">
+                <div class="user" th:each="user: ${users}">
+                    <span class="user-name" th:text="${user.getFirstName}"></span>
+                    <span class="user-last-name" th:text="${user.getLastName}"></span>
+                    <span class="user-email" th:text="${user.getEmail}"></span>
+                    <button class="add-friend" name="add-friend" th:value="${user.getId}" tabindex="1">Invite As Friend</button>
+                </div>
+            </form>
+            <span class="error" th:text="${searchError}"></span>
+            <span class="search-container-result" th:if="${#lists.isEmpty(users)}" th:unless="${searchError}">Search for users by name or email</span>
+        </div>
+        <div th:replace="fragments/pagination.html :: pagination(${totalPages}, ${currentPage}, ${search}, 'friends')" tabindex="1"></div>
+    </div>
+    <div class="remove-friend-modal-content" id="removeFriendModalContent">
+        <div class="remove-friend-modal-content-wrapper">
+            <span class="remove-friend-modal-title">Remove Friend</span>
+            <span class="remove-friend-modal-message">Are you sure you want to remove this friend?</span>
+            <div class="remove-friend-modal-buttons">
+                <button class="remove-friend-button-cancel" id="removeCancelButton" onclick="closeRemoveFriendModal()" autofocus>Cancel</button>
+                <form th:action="@{/friend}" method="post">
+                    <input type="hidden" name="friendId" id="friendId"/>
+                    <button class="remove-friend-button" name="removeFriend">Remove</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+    <div class="modal-backdrop" id="modal-backdrop" onclick=closeAllModals()>
+    </div>
+</body>
+</html>
+<script th:inline="javascript">
+    // DO NOT DELETE THE BELOW COMMENT THYME LEAF REQUIRES
+    /*<![CDATA[*/
+    function showSearch() {
+        document.getElementById("search-container-content").style.display = "block";
+        document.getElementById("modal-backdrop").style.display = "block";
+        document.getElementById("searchInput").select();
+    }
+
+    function hideSearch() {
+        document.getElementById("search-container-content").style.display = "none";
+        document.getElementById("modal-backdrop").style.display = "none";
+    }
+
+    // DO NOT DELETE THE BELOW COMMENT THYME LEAF REQUIRES
+    let showSearchBox = /*[[${searchOpen}]]*/ 'default';
+    if (showSearchBox === true) {
+        showSearch();
+    }
+
+    function openRemoveFriendModal(id) {
+        document.getElementById("friendId").value = id;
+        document.getElementById("removeFriendModalContent").style.display = "block";
+        document.getElementById("modal-backdrop").style.display = "block";
+        document.getElementById("removeCancelButton").focus();
+    }
+    function closeRemoveFriendModal() {
+        document.getElementById("removeFriendModalContent").style.display = "none";
+        document.getElementById("modal-backdrop").style.display = "none";
+    }
+
+    function closeAllModals() {
+        hideSearch();
+        closeRemoveFriendModal();
+    }
+
+    // DO NOT DELETE THE BELOW COMMENT THYME LEAF REQUIRES
+    /*]]>*/
+</script>
+

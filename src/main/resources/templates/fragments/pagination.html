@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--
+Pagination fragment
+Parameters:
+- totalPages: the total number of pages (base 1)
+- currentPage: the current page number (base 1)
+- search: the search parameter (optionally can be made null if not required)
+- basePath: the base path for the pagination links, clicking on the links will append the page number to this path
+-->
+
+<div th:with="searchParam=${search == null ? '?' : '?search=' + search + '&'}" th:fragment="pagination(totalPages, currentPage, search, basePath)">
+    <div class="pagination-container">
+        <div class="pagination" th:if="${totalPages > 1}">
+            <!-- Go to first page button, style changes if the current page is the first page -->
+            <a class="btn" th:href="@{${basePath + searchParam + 'page=' + 1}}" th:if="${currentPage != 1}" tabindex="1">First</a>
+            <a class="btn" th:href="@{${basePath + searchParam + 'page=' + 1}}" th:if="${currentPage == 1}" style="color: var(--pagination-button-active-text); background-color: var(--pagination-button-active-bg);" tabindex="1">First</a>
+            <span th:if="${currentPage != 1}">...</span>
+            <a class="btn" th:href="@{${basePath + searchParam + 'page=' + (currentPage - 2)}}" th:if="${currentPage > 2}" th:text="${currentPage - 2}" tabindex="1"></a>
+            <a class="btn" th:href="@{${basePath + searchParam + 'page=' + (currentPage - 1)}}" th:if="${currentPage > 1}" th:text="${currentPage - 1}" tabindex="1"></a>
+            <a class="btn" th:href="@{${basePath + searchParam + 'page=' + currentPage}}" th:text="${currentPage}" style="color: var(--pagination-button-active-text); background-color: var(--pagination-button-active-bg);" tabindex="1"></a>
+            <a class="btn" th:href="@{${basePath + searchParam + 'page=' + (currentPage + 1)}}" th:if="${currentPage < totalPages}" th:text="${currentPage + 1}" tabindex="1"></a>
+            <a class="btn" th:href="@{${basePath + searchParam + 'page=' + (currentPage + 2)}}" th:if="${(currentPage < totalPages - 1)}" th:text="${currentPage + 2}" tabindex="1"></a>
+            <span th:if="${currentPage != totalPages}">...</span>
+            <!-- Go to lsat page button, style changes if the current page is the last page -->
+            <a class="btn" th:href="@{${basePath + searchParam + 'page=' + totalPages}}" th:if="${currentPage != totalPages}" tabindex="1">Last</a>
+            <a class="btn" th:href="@{${basePath + searchParam + 'page=' + totalPages}}" th:if="${currentPage == totalPages}" style="color: var(--pagination-button-active-text); background-color: var(--pagination-button-active-bg);" tabindex="1">Last</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

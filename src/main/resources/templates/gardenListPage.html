@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" context="text/html; charset=UTF-8">
+    <title>My Gardens</title>
+    <link th:href="@{/css/styles.css}" rel="stylesheet">
+    <script th:src="@{/js/cancelButtonRedirect.js}"></script>
+    <link rel="icon" type="image/x-icon" href='../../img/grapevine-logo-small.svg'>
+</head>
+<body>
+<div th:replace="fragments/navbar.html :: nav-bar(${gardens})"></div>
+<button class="backButton cancel" onclick="goPrev()">
+    <span><img th:replace="fragments/icons.html :: arrow-left">Back</span>
+</button>
+<div class="gardenListPage">
+    <div class="gardenListContainer">
+        <div class="garden-title" th:text="${user.getId() == navBarUser.getId()} ? 'Your Gardens' : ${user.getFirstName()} + '\'s Gardens'">My Gardens</div>
+        <div th:if="${noGardens}">
+            No Gardens
+        </div>
+        <div class="gardenList">
+            <a class="gardenButton" th:if="${gardensDisplay} != null" th:each="garden : ${gardensDisplay}"
+               th:href="@{'/garden/' + ${garden.gardenId}}">
+                <span th:text="${#strings.abbreviate(garden.name, 30)}"></span>
+                <hr style="height:2px;border-width:0;color:gray;background-image:
+                linear-gradient(to right, green, yellow);margin-bottom: 14px">
+            </a>
+        </div>
+    </div>
+    <div th:if="${gardenName!=null} and ${gardenEdit==true}" class="addGardenSuccess">
+        The garden <span th:text="${gardenName}"></span> at <span th:text="${location}"></span>
+        was successfully edited.
+    </div>
+    <div th:if="${gardenName!=null} and ${gardenEdit==false}" class="addGardenSuccess">
+        The garden <span th:text="${gardenName}"></span> at <span th:text="${location}"></span>
+        was successfully created.
+    </div>
+
+</div>
+<script th:src="@{/js/cancel-button-redirect.js}"></script>
+</body>
+</html>

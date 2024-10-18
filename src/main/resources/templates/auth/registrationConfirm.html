@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" context="text/html; charset=UTF-8">
+    <title>Confirm Account Creation</title>
+    <link th:href="@{/css/styles.css}" rel="stylesheet">
+    <script th:src="@{/js/toggle-colour-scheme.js}"></script>
+    <link rel="icon" type="image/x-icon" href='../../img/grapevine-logo-small.svg'>
+</head>
+
+<body>
+<div class="outer-container">
+    <div class="inner-container">
+
+        <span class="welcome-message">Welcome to The GrapeVine!</span>
+
+        <p>We have sent you an account creation confirmation email that will expire in ten minutes,
+            which contains a 6-digit account creation code. Please check your inbox and junk mail.</p>
+
+        <form id="registerUserConfirm" class="account-verification-form" th:action="@{/auth/registration-confirm}" method="post" novalidate>
+
+            <div class="form-field">
+                <label class="required" for="token">Account creation code:</label>
+                <input id="accountCode" type="text" name="token" minlength="6" maxlength="6" required>
+
+                <span th:if="${message}" class="error-message" th:text="${message}"></span>
+            </div>
+
+            <div class="button-container">
+                <button class="cancel" type="button" onclick="cancelAction(event)">
+                    <span th:href="@{/}">Cancel</span>
+                </button>
+
+                <button class="submit" id="submit" type="submit" value="token"><span>Create Account</span></button>
+            </div>
+
+        </form>
+    </div>
+</div>
+<script th:src="@{/js/suppress-enter-submission.js}" data-allowed-types="submit,button" data-allowed-ids="accountCode"></script>
+</body>
+</html>

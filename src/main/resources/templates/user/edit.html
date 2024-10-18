@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Edit Profile</title>
+    <link th:href="@{/css/styles.css}" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href='../../img/grapevine-logo-small.svg'>
+</head>
+<body>
+<div th:replace="fragments/navbar.html :: nav-bar(${gardens})"></div>
+<div class="outer-container">
+    <div class="inner-container">
+        <span class="welcome-message">Edit your details</span>
+        <form th:action="@{/user/edit}" method="post" th:object="${user}" id="editProfileForm"
+              enctype="multipart/form-data" class="register-form">
+
+            <!-- Profile Image MultipartFile -->
+            <br/>
+            <div class="profile-image-container" style="display: flex; justify-content: center; align-items: center;">
+                <img alt="previewImage" class="big-profile-image" id="previewImage" th:src="${profileImage}" onerror="this.onerror=null; this.src='../img/profileicon.png';">
+                <label for="profileImageEdit">Edit Profile Picture:</label>
+                <span id="jsImageErrorText" class="error" th:text="${imageError != null ? imageError : ''}" style="color: red;"></span>
+                <span th:if="${#fields.hasErrors('profileImage')}" th:errors="*{profileImage}" class="error" id="imageErrorText"
+                      style="color: red;"></span>
+                <div class="submit-image-container" style="background: darkseagreen">
+                    <input type="file" class="form-control edit-image" id="profileImageEdit" name="ProfileImage"
+                           accept="image/*" data-cy="uploadedProfileImage" th:onchange="previewFile([[${profileImage}]])" th:onload="previewFile([[${profileImage}]])" autocomplete="off">
+                </div>
+            </div>
+
+            <!-- Email Field -->
+            <div class="form-field">
+                <label for="emailEdit" style="font-weight: normal">Email:</label>
+                <input type="text" class="form-control" id="emailEdit" th:field="*{email}" data-cy="email">
+                <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="error" id="emailErrorText"
+                      style="color: red;"></span>
+            </div>
+            <br/>
+
+            <!-- Date of Birth Field -->
+            <div class="form-field">
+                <label for="dobEdit" style="font-weight: normal">Date of Birth:</label>
+                <input type="date" class="form-control" id="dobEdit" th:field="*{dob}" data-cy="dob"  max="9999-12-31"> <!-- max from https://stackoverflow.com/a/26870709, to fix 6 digit years in chrome -->
+                <span th:if="${#fields.hasErrors('dob')}" th:errors="*{dob}" class="error" id="dobErrorText" style="color: red;"></span>
+            </div>
+            <br/>
+
+            <!-- First Name Field -->
+            <div class="form-field">
+                <label for="firstNameEdit" style="font-weight: normal">First Name:</label>
+                <input type="text" class="form-control" id="firstNameEdit" th:field="*{firstName}" data-cy="firstName">
+                <span th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}" class="error" id="firstNameErrorText"
+                      style="color: red;"></span>
+            </div>
+            <br/>
+
+            <!-- Last Name Field -->
+            <div class="form-field">
+                <div style="width: 100%; justify-content: space-between; display: flex">
+                    <label for="lastNameEdit" style="font-weight: normal">Last Name:</label>
+                    <label>
+                        <input type="checkbox" th:field="*{noLastName}" id="noLastNameCheckboxEdit"
+                               onclick="toggleLastNameField()">
+                        I have no surname
+                    </label>
+                </div>
+                <input type="text" class="form-control" id="lastNameEdit" th:field="*{lastName}" data-cy="lastName"
+                       th:disabled="${user.noLastName}">
+                <span th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}" class="error" id="lastNameErrorText"
+                      style="color: red;"></span>
+            </div>
+            <br/>
+
+            <div class="button-container" >
+                <button class="cancel" type="button" id="cancel-button" onclick={cancelEditAction(event)}>
+                    <span th:href="@{'/user/profile/' + ${user.id ?: userId}}">Cancel</span>
+                </button>
+                <button class="edit" type="button" id="change-password" onclick={changePasswordAction(event)}>
+                    <span th:href="@{/user/editPassword}">Change password</span>
+                </button>
+                <button class="submit" type="submit" id="submitEdit">
+                    <span>Submit</span>
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+</body>
+</html>
+<script type="text/javascript" th:inline="javascript">
+    //Code here from https://stackoverflow.com/questions/51786267/thymeleaf-use-a-link-with-thhref-in-javascript
+    /*<![CDATA[*/
+    let cancelLink = /*[[@{'/user/profile/' + ${user.id ?: userId}}]]*/'';
+    let changePasswordLink = /*[[@{/user/editPassword}]]*/'';
+
+    $('#div').html(
+        '<a href="' + cancelLink + '">...</a>'
+    );
+
+    // Cancel button redirects to the profile page
+    function cancelEditAction(event) {
+        event.preventDefault();
+        window.location.href = cancelLink
+    }
+
+    // Change password redirects to the password page
+    function changePasswordAction(event) {
+        event.preventDefault();
+        window.location.href = changePasswordLink
+    }
+    function toggleLastNameField() {
+        let lastNameField = document.getElementById('lastNameEdit');
+        let checkbox = document.getElementById('noLastNameCheckboxEdit');
+        lastNameField.disabled = checkbox.checked;
+        if (checkbox.checked) {
+        lastNameField.value = '';
+        } else {
+        lastNameField.value = "";
+        }
+    }
+
+/*]]>*/
+</script>
+<script th:src="@{/js/upload-image.js}"></script>
+<script th:src="@{/js/preview-file.js}"></script>
+<script th:src="@{/js/suppress-enter-submission.js}" data-allowed-types="submit"
+        data-allowed-ids="cancel-button,change-password,profileImageEdit"></script>
+<script th:src="@{/js/custom-date-error-message.js}" data-date-field-names="dob"></script>
+<script th:inline="javascript">
+    /**
+     * For image to show on page when updated - with help from ChatGPT
+     * Used on profile and edit profile pages
+     */
+    function previewFile(oldFile) {
+        checkPreviewFile(oldFile);
+    }
+</script>

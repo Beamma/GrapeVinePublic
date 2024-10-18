@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "agora-rtc-sdk-ng": "^4.22.1",
+    "@stomp/stompjs": "^7.0.0",
+    "stomp": "^0.1.1"
+  },
+  "devDependencies": {
+    "webpack": "^5.94.0",
+    "webpack-cli": "^5.1.4"
+  }
+
+}

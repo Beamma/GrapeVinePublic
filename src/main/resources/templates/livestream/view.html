@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>View Live Stream</title>
+    <title th:text="${livestream.getTitle()}"></title>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <link th:href="@{/css/styles.css}" rel="stylesheet">
+
+</head>
+<body>
+<!-- Nav Bar -->
+<div th:replace="fragments/navbar.html :: nav-bar(${gardens})"></div>
+<div class="gardenBackButton" th:if="${!livestream.getOwner().getId().equals(navBarUser.getId())}">
+    <button class="backButton cancel" onclick="goPrev()">
+        <span><img th:replace="fragments/icons.html :: arrow-left">Back</span>
+    </button>
+</div>
+
+<!-- Storing Data -->
+<div id="livestream-data"
+     th:data-user-id="${user.id}"
+     th:data-livestream-id="${livestream.id}"
+     th:data-is-host="${isHost}"
+     th:data-host-id="${hostId}">
+</div>
+
+<!-- Livestream Contain -->
+<div id="livestream-body" class="livestream-body">
+    <div id="livestream-and-chat-container" class="livestream-and-chat-container">
+        <div id="livestream-container" class="livestream-container">
+            <div id="video-container" class="livestream-video">
+                <!--Loading message-->
+                <span id="fetching-video" class="fetching-video">Loading Stream</span>
+            </div>
+                <div id="controls-container">
+                    <div id="video-controls" style="display: none">
+                        <span id="playPauseBtn" aria-label="Play">
+                            <svg id="playIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="display: none;">
+                                <path d="M3 22v-20l18 10-18 10z"/>
+                            </svg>
+                            <svg id="pauseIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                                <path d="M11 22h-4v-20h4v20zm6-20h-4v20h4v-20z"/>
+                            </svg>
+                        </span>
+                        <span id="muteBtn" aria-label="Mute">
+                            <svg id="muteIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="display: none">
+                                <path d="M19 7.358v15.642l-8-5v-.785l8-9.857zm3-6.094l-1.548-1.264-3.446 4.247-6.006 3.753v3.646l-2 2.464v-6.11h-4v10h.843l-3.843 4.736 1.548 1.264 18.452-22.736z"/>
+                            </svg>
+                            <svg id="unmuteIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                                <path d="M6 7l8-5v20l-8-5v-10zm-6 10h4v-10h-4v10zm20.264-13.264l-1.497 1.497c1.847 1.783 2.983
+                                4.157 2.983 6.767 0 2.61-1.135 4.984-2.983 6.766l1.498 1.498c2.305-2.153 3.735-5.055 3.735-8.264s-1.43-6.11-3.736-8.264zm-.489
+                                8.264c0-2.084-.915-3.967-2.384-5.391l-1.503 1.503c1.011 1.049 1.637 2.401 1.637 3.888 0 1.488-.623 2.841-1.634 3.891l1.503
+                                1.503c1.468-1.424 2.381-3.309 2.381-5.394z"/>
+                            </svg>
+                        </span>
+                        <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="1">
+                        <span id="fullscreenBtn" aria-label="Fullscreen">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                                <path d="M24 9h-2v-5h-7v-2h9v7zm-9 13v-2h7v-5h2v7h-9zm-15-7h2v5h7v2h-9v-7zm9-13v2h-7v5h-2v-7h9z"/>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <!--Viewer count and icon container-->
+                <div id="livestream-information" class="stream-information">
+                    <span id="resizable-text" th:text="${livestream.title}" class="livestream-title responsive-text"></span>
+                    <!--Viewer count and icon container-->
+                    <div id="viewer-count-chip" class="viewer-count-chip">
+                        <img th:replace="fragments/icons.html :: viewers">
+                        <span id="viewer-count-text" class="viewer-count-text">0</span>
+                    </div>
+                    <button id="deleteButton" class="submit end-livestream" style="background: var(--red-button-bg)" onclick="openConfirmation()" th:if="${livestream.getOwner().getId().equals(navBarUser.getId())}">
+                        <span>End Livestream</span>
+                    </button>
+
+                <!-- Confirm end livestream -->
+                <div id="confirm-end-livestream" class="confirm-overlay">
+                    <div class="confirm-overlay-container">
+                        <p>Warning: If you exit this page the stream will end.</p>
+                        <div class="button-container">
+                            <button class="cancel" type="button" id="confirm-stay" onclick="cancelEndLivestream()">
+                                <Span>Stay</Span>
+                            </button>
+                            <button class="edit confirm-yes" type="button" id="confirm-end"
+                                    onclick="confirmEndLivestream()">
+                                <Span>End Livestream</Span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Livestream Ended Modal -->
+                <div id="livestream-ended" class="confirm-overlay">
+                    <div class="confirm-overlay-container">
+                        <p>Your stream has ended as you attempted to navigate away from this page</p>
+                        <div class="button-container">
+                            <button class="cancel" type="button" id="ok-redirect" onclick="redirectUser()">
+                                <Span>Ok</Span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <!-- Host user profile -->
+            <div class="livestream-card-streamer-info host-info">
+                <a th:href="@{'/user/profile/' + ${livestream.getOwner().getId}}"
+                   style="text-decoration:none; display: flex; align-items: center;">
+                    <img th:src="${livestream.getOwner().getProfileImageBase64()}" class="small-profile-image"
+                         onerror="this.onerror=null; this.src='../img/profileicon.png';" style="margin-right: 10px">
+                    <span th:if="${livestream.getOwner().getLastName() != null}"
+                          th:text="${livestream.getOwner().getFirstName() + ' ' + livestream.getOwner().getLastName()}"
+                          class="livestream-card-streamer-name"></span>
+                    <span th:if="${livestream.getOwner().getLastName() == null}"
+                          th:text="${livestream.getOwner().getFirstName()}"
+                          class="livestream-card-streamer-name"></span>
+                </a>
+            </div>
+            <!-- Description -->
+            <div style="max-width: 100%;">
+                <span th:text="${livestream.description}" class="livestream-description"></span>
+            </div>
+        </div>
+        <label hidden="hidden" id="room-id-hidden-label" th:text="${roomId}"></label>
+        <label hidden="hidden" id="chat-name-label" th:text="${chatName}"></label>
+
+        <div class="row message-chat-container">
+            <div class="col-md-12">
+                <table id="conversation" class="table table-striped message-table">
+                    <tbody id="greetings" class="chat-body"></tbody>
+                </table>
+                <div class="chat-input-container">
+                    <form class="form-chat-input">
+                        <div class="chat-submit-box">
+                            <input type="text" id="message-input" class="form-control chat-textbox" placeholder="Your message here...">
+                            <button id="send-message-button" class="send-message-button" type="submit">
+                                <img th:src="@{/img/send-comment.svg}" id="send-message-icon">
+                                <div class="loader" id="send-message-loader"></div>
+                            </button>
+                        </div>
+                        <span id="char-counter">0/256</span>
+                        <div id="input-error-message" class="alert alert-danger" style="color: red; display:none;"></div>
+                        <span id="chat-length-error-message" style="display: none; color: red">Chat messages must be less than 256 characters</span>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="start-stream-overlay" class="confirm-overlay">
+    <div id="start-stream-overlay-container" class="confirm-overlay-container">
+        <p>You have successfully started a stream. If you navigate away from this page your stream will be ended.</p>
+        <div class="button-container">
+            <button class="cancel" type="button" id="confirm-ok" onclick="closeModal()">
+                <Span>Ok</Span>
+            </button>
+        </div>
+    </div>
+</div>
+<!-- Link to the external JavaScript file -->
+<script th:src="@{/js/bundledLivestream.js}"></script>
+<script th:src="@{/webjars/stomp__stompjs/7.0.0/bundles/stomp.umd.min.js}"></script>
+<script th:src="@{/js/chat-config.js}"></script>
+<script th:src="@{/js/resize-text.js}"></script>
+<script th:src="@{/js/character-counter.js}"></script>
+<script th:if="${livestream.getOwner().getId().equals(navBarUser.getId())}" th:src="@{/js/end-livestream.js}"></script>
+<script th:src="@{/js/cancel-button-redirect.js}"
+        th:if="${!livestream.getOwner().getId().equals(navBarUser.getId())}"></script>
+`
+<script th:if="${livestream.getOwner().getId().equals(navBarUser.getId())}" th:src="@{/js/start-stream.js}"></script>
+</body>
+</html>

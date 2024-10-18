@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" context="text/html; charset=UTF-8">
+    <title th:text="${id} == null ? 'Create New Garden' : 'Edit Garden'">Create New Garden</title>
+    <link th:href="@{/css/styles.css}" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href='../../img/grapevine-logo-small.svg'>
+</head>
+<div th:replace="fragments/navbar.html :: nav-bar(${gardens})"></div>
+<script>
+    window.onload = countChars(document.getElementsByName('description')[0].value.length)
+</script>
+<body>
+<div class="createGardenBody">
+    <div class="container">
+        <div class="title" th:text="${id} == null ? 'Create New Garden' : 'Edit Garden'">Create Garden</div>
+
+        <form id="gardenForm" th:action="${id} == null ? @{add} : @{'/garden/add/' + ${id}}" th:method="${id} == null ? 'post' : 'put'"
+              th:object="${gardenDTO}">
+
+            <div class="garden-details">
+
+                <div class="input-box">
+                    <span class="details required">Garden Name</span>
+                    <input type="text" placeholder="e.g. My new garden" th:field="*{gardenName}"
+                           th:style="${#fields.hasErrors('gardenName') ? 'border-color: #ff0000;' : _}">
+                    <span th:if="${#fields.hasErrors('gardenName')}" th:errors="*{gardenName}"
+                          style="color: red;"></span>
+                </div>
+
+                <div class="input-box">
+                    <label for="autocomplete-container-street-input" class="details">Address</label>
+                    <div class="autocomplete-container" id="autocomplete-container-street">
+                        <input type="text" placeholder="e.g. 34 Orchard Avenue" id="autocomplete-container-street-input"
+                               th:field="*{location.addressLine1}" th:style="${#fields.hasErrors('location.addressLine1')? 'border-color: #ff0000;' : _}">
+                    </div>
+                    <span th:if="${#fields.hasErrors('location.addressLine1')}" th:errors="*{location.addressLine1}"
+                          style="color: red;"></span>
+                    <div class="autocomplete-container-row">
+                        <div class="autocomplete-container-column">
+                            <label for="autocomplete-container-suburb-input" class="details">Suburb</label>
+                            <div class="autocomplete-container" id="autocomplete-container-suburb">
+                                <input type="text" placeholder="e.g. Ilam" id="autocomplete-container-suburb-input"
+                                       th:field="*{location.suburb}" th:style="${#fields.hasErrors('location.suburb') ? 'border-color: #ff0000;' : _}">
+                            </div>
+                            <span th:if="${#fields.hasErrors('location.suburb')}" th:errors="*{location.suburb}"
+                                  style="color: red;"></span>
+                        </div>
+                        <div class="autocomplete-container-column">
+                            <label for="autocomplete-container-postcode-input"
+                                   class="details">Postcode</label>
+                            <div class="autocomplete-container" id="autocomplete-container-postcode">
+                                <input type="text" placeholder="e.g. 1240" id="autocomplete-container-postcode-input"
+                                       th:field="*{location.postcode}" th:style="${#fields.hasErrors('location.postcode') ? 'border-color: #ff0000;' : _}">
+                            </div>
+                            <span th:if="${#fields.hasErrors('location.postcode')}" th:errors="*{location.postcode}"
+                                  style="color: red;"></span>
+                        </div>
+                    </div>
+                    <div class="autocomplete-container-row">
+                        <div class="autocomplete-container-column">
+                            <label for="autocomplete-container-city-input" class="details required">City</label>
+                            <div class="autocomplete-container" id="autocomplete-container-city">
+                                <input type="text" placeholder="e.g. Christchurch"
+                                       id="autocomplete-container-city-input" th:field="*{location.city}"
+                                       th:style="${#fields.hasErrors('location.city') || #fields.hasErrors('location') ? 'border-color: #ff0000;' : _}">
+                            </div>
+                            <span th:if="${#fields.hasErrors('location.city')}" th:errors="*{location.city}"
+                                  style="color: red;"></span>
+                        </div>
+                        <div class="autocomplete-container-column">
+                            <label for="autocomplete-container-country-input" class="details required">Country</label>
+                            <div class="autocomplete-container" id="autocomplete-container-country">
+                                <input type="text" placeholder="e.g. New Zealand"
+                                       id="autocomplete-container-country-input" th:field="*{location.country}"
+                                       th:style="${#fields.hasErrors('location.country') || #fields.hasErrors('location') ? 'border-color: #ff0000;' : _}">
+                            </div>
+                            <span th:if="${#fields.hasErrors('location.country')}" th:errors="*{location.country}"
+                                  style="color: red;"></span>
+                        </div>
+                    </div>
+                    <span th:if="${#fields.hasErrors('location')}" th:errors="*{location}"
+                          style="color: red;"></span>
+                    <input type="text" id="autocomplete-container-longitude-input" th:field="*{location.longitude}"
+                           style="display: none;">
+                    <input type="text" id="autocomplete-container-latitude-input" th:field="*{location.latitude}"
+                           style="display: none;">
+                </div>
+
+                <label for="sizeField" class="details">Garden Size (m<sup>2</sup>)</label>
+                <div class="input-box">
+                    <input type="text" id="sizeField" placeholder="e.g. 11" th:field="*{size}" th:value="${size}"
+                           th:style="${#fields.hasErrors('size') ? 'border-color: #ff0000;' : 'border-color: var(--text-box-outline);'}">
+                    <span th:if="${#fields.hasErrors('size')}" th:errors="*{size}" style="color: red;"></span>
+                </div>
+
+                <div class="input-box">
+                    <label for="descriptionField" class="details">Garden Description</label>
+                    <textarea rows="5" cols="60" id="descriptionField" th:field="*{description}"
+                              th:style="${#fields.hasErrors('description') ? 'border-color: #ff0000;' : 'border-color: var(--text-box-outline);'}"
+                              oninput="countChars(this); checkMaxDescriptionChars(this)" onpaste="checkAfterPaste(this)"
+                             ></textarea>
+                    <span class="characterCount">(<span id="charCount">0/512</span>)</span>
+                    <span id="descriptionError" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"
+                          style="color: red;"></span>
+                </div>
+
+            </div>
+            <div class="button-container">
+                <button class="cancel" type="button" onClick="goPrev()" id="cancel">
+                    <span>Cancel</span>
+                </button>
+                <button type="submit" class="submit">
+                    <span th:text="${id} == null ? 'Create' : 'Submit'"></span>
+                </button>
+            </div>
+        </form>
+        <span>Powered by <a href="https://www.geoapify.com/">Geoapify</a></span>
+    </div>
+    <div class="search-container-content" id ="api-error-container-content">
+        <button id="closeAPI" class="cancel close-search" onclick="hideAPIErrorModal()">
+            <span class="small-button-text">Close</span>
+        </button>
+        <br>
+            <div id="api-error-modal-buttons" class="api-error-modal-buttons">
+                <h2 class="modal-title">Garden description cannot be checked for profanity right now.</h2>
+                <br>
+                <button id="upload-without-description" type="submit" class="edit" onclick="submitWithoutDesc()" autofocus>
+                    <span th:text="${id} == null ? 'Continue without description' : 'Continue without updating description'"></span>
+                </button>
+            </div>
+    </div>
+</div>
+<div class="modal-backdrop" id="modal-backdrop" onclick="closeAllModals()">
+</div>
+</body>
+    <script th:src="@{/js/address-collection.js}"></script>
+<script th:inline="javascript">
+
+    /*<![CDATA[*/
+
+    // Autofills the description field with and sets the character count for an edit
+    var description = document.getElementById("descriptionField").innerText;
+    document.getElementById("charCount").textContent = description.length + "/512"
+    checkMaxDescriptionChars(document.getElementsByName("description")[0])
+
+    function countChars(inputElement) {
+        const charCountElement = document.getElementById('charCount');
+        const description = inputElement.value;
+        checkMaxDescriptionChars(inputElement)
+        const descriptionLength = Array.from(description).length;
+        charCountElement.textContent = descriptionLength + "/512";
+
+        return description.length
+    }
+
+    function checkMaxDescriptionChars(inputElement) {
+        const description = inputElement.value;
+        const descriptionLength = Array.from(description).length;
+        checkAfterPaste(inputElement)
+        if ( descriptionLength >= 512) {
+            document.getElementById('charCount').style.color = "red"
+        } else {
+            document.getElementById('charCount').style.color = "#737373"
+        }
+    }
+
+    function checkAfterPaste(inputElement) {
+        const description = inputElement.value;
+        const descriptionLength = Array.from(description).length;
+        if ( descriptionLength >= 512) {
+            inputElement.value = Array.from(description).slice(0, 512).join('')
+        }
+        const charCountElement = document.getElementById('charCount');
+        charCountElement.textContent = Array.from(inputElement.value).length + "/512";
+    }
+
+    function showAPIErrorModal() {
+        document.getElementById("api-error-container-content").style.display = "block";
+        document.getElementById("modal-backdrop").style.display = "block";
+        document.getElementById("upload-without-description").focus();
+    }
+
+    function hideAPIErrorModal() {
+        document.getElementById("api-error-container-content").style.display = "none";
+        document.getElementById("modal-backdrop").style.display = "none";
+    }
+
+    // DO NOT DELETE THE BELOW COMMENT THYME LEAF REQUIRES
+    let showAPIError = /*[[${apiErrorOpen}]]*/ 'default';
+    if (showAPIError === true) {
+        showAPIErrorModal();
+    }
+
+    function closeAllModals() {
+        // When click outside of modal, close the modal
+        document.getElementById("api-error-container-content").style.display = "none";
+        document.getElementById("modal-backdrop").style.display = "none";
+    }
+
+    /**
+     * Submit form without updating description when API is down and cannot check profanity
+     */
+    function submitWithoutDesc() {
+        // descriptionCopy is passed back from the GardenController on the edit garden method
+        // Set description to original description, otherwise empty string
+        const originalDescription = /*[[${descriptionCopy}]]*/ '';
+        document.getElementById("descriptionField").value = originalDescription;
+
+        // Close modal
+        document.getElementById("api-error-container-content").style.display = "none";
+        document.getElementById("modal-backdrop").style.display = "none";
+
+        // Resubmit form
+        document.getElementById('gardenForm').submit();
+    }
+
+    /*]]>*/
+</script>
+<script th:src="@{/js/cancel-button-redirect.js}"></script>
+<script th:src="@{/js/suppress-enter-submission.js}" data-allowed-types="submit" data-allowed-ids="descriptionField,sizeField,cancel"></script>
+</html>

@@ -110,7 +110,7 @@ To use the application, open [http://localhost:8080](http://localhost:8080)
 
 ## Intellectual Property
 
-Intellectual Property is owned by Joel Bremner and the University Of Canterbury
+Intellectual Property is owned by the above mentioned contributers and the University Of Canterbury
 
 ## References
 
